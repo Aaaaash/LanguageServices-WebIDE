@@ -8,16 +8,8 @@ import * as rpc from "vscode-ws-jsonrpc";
 import * as cp from "child_process";
 import * as readline from "readline";
 import * as fs from "fs";
-import {
-  StreamMessageReader,
-  StreamMessageWriter,
-  createProtocolConnection,
-  Logger,
-  InitializeRequest,
-  DidOpenTextDocumentNotification,
-  ParameterInformation,
-  MessageReader
-} from "vscode-languageserver-protocol";
+import { StreamMessageReader } from './messageReader';
+import { SocketMessageWriter, StreamMessageWriter } from './messageWriter';
 import { createConnection } from "vscode-languageserver/lib/main";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { ParsedUrlQuery } from "querystring";
@@ -45,8 +37,8 @@ function prepareParams(
   }
   params.push("-configuration");
   params.push("/Users/sakura/lsp/vscode-java/server/config_mac");
-  params.push("-data");
-  params.push(workspacePath);
+  // params.push("-data");
+  // params.push(workspacePath);
   return params;
 }
 function prepareExecutable() {
@@ -93,64 +85,47 @@ app.get("/content", (req: Request, res: Response) => {
       code: 0
     });
   });
-  // console.log(ws, file);
 });
+
 const webSocket = new ws.Server({
   noServer: true,
   perMessageDeflate: false,
   maxPayload: 100 * 1024 * 1024
 });
 
-let tcpServr;
-let tcpSocket;
-let clientSocket;
-tcpServr = net.createServer(socket => {
-  tcpSocket = socket;
-  socket.on("connect", () => {
-    console.log("java lsp is connected!");
-  });
+let ContentLength: string = 'Content-Length: ';
+let CRLF = '\r\n';
 
-  socket.on("data", data => {
-    if (clientSocket) {
-      clientSocket.send(data.toString());
-      console.log(data.toString());
-    }
-  });
+const processCommand = prepareExecutable();
+const tspProcess = cp.spawn(processCommand.command, processCommand.args);
 
-  socket.on("end", end => {
-    console.log(end, "the end");
-  });
-  socket.pipe(socket);
+tspProcess.on('error', (err) => {
+  console.warn(`java lsp has Error: ${err}`);
 });
 
-tcpServr.listen(13245, () => {
-  console.log("waitting for java lsp connect!");
-});
-function launch(socketconnect) {
-  clientSocket = socketconnect;
-  const args = prepareParams();
-
-  const envOptions = {
-    env: {
-      CLIENT_PORT: 13245
-    }
-  };
-
-  if (socketconnect && tcpSocket) {
-    socketconnect.onMessage(data => {
-      tcpSocket.write(data);
-    });
-  }
-  // const tspProcess: cp.ChildProcess = cp.spawn('java', args, envOptions);
-  // tspProcess.on('error', (err) => {
-  //   console.log(err);
-  // });
-  socketconnect.onClose(() => {
-    // tspProcess.kill();
+function launch(clientSocket) {
+  clientSocket.onMessage((data) => {
+    tspProcess.stdin.write(data);
   });
-  // if (!tcpServr) {
 
-  // }
+  clientSocket.onClose(() => {
+    tspProcess.kill();
+  })
+
+  /**
+   * 将标准输出转化为messageReader流
+   */
+  const messageReader = new StreamMessageReader(tspProcess.stdout)
+  // const messageWriter = new StreamMessageWriter(clientSocket);
+  messageReader.listen((data) => {
+    const jsonrpcData = JSON.stringify(data);
+    Buffer.byteLength(jsonrpcData, 'utf-8');
+    let headers: string[] = [
+			ContentLength, jsonrpcData.length.toString(), CRLF,
+			CRLF
+		];
+    clientSocket.send(`${headers.join('')}${jsonrpcData}`);
+  })
 }
 
 httpserver.on("upgrade", (req, socket, head) => {
@@ -159,6 +134,12 @@ httpserver.on("upgrade", (req, socket, head) => {
     webSocket.handleUpgrade(req, socket, head, web_socket => {
       const socketconnect = {
         send: content =>
+          web_socket.send(content, error => {
+            if (error) {
+              throw error;
+            }
+          }),
+        write: content =>
           web_socket.send(content, error => {
             if (error) {
               throw error;
