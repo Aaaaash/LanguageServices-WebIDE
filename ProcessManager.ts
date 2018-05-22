@@ -1,8 +1,6 @@
 import * as net from 'net';
 import * as cp from 'child_process';
 
-import getPort from './getPort';
-
 export default class ProcessManager {
   private processList: Array<cp.ChildProcess>
   constructor () {

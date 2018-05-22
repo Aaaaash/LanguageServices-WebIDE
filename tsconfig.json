@@ -7,7 +7,7 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "out",
-		"sourceMap": true
+		"sourceMap": false
 	},
 	"exclude": [
 		"node_modules",

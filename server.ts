@@ -9,7 +9,6 @@ import { StreamMessageReader } from "./messageReader";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { ParsedUrlQuery } from "querystring";
 
-import { initNewJavaLSProcess } from "./getPort";
 import ProcessManager from "./ProcessManager";
 import { IncomingMessage } from "http";
 import workspaceConvert from './workspaceConvert';
@@ -27,7 +26,7 @@ function prepareParams() {
   params.push("-Dlog.level=2");
   params.push("-jar");
   params.push(
-    "/Users/sakura/lsp/vscode-java/server/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
+    "/data/coding-ide-home/repository/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
   );
   let configDir = "config_win";
   if (process.platform === "darwin") {
@@ -36,11 +35,10 @@ function prepareParams() {
     configDir = "config_linux";
   }
   params.push("-configuration");
-  params.push(`/Users/sakura/lsp/vscode-java/server/${configDir}`);
+  params.push(`/data/coding-ide-home/repository/${configDir}`);
   return params;
 }
 function prepareExecutable() {
-  const javahome = "/Library/java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/bin/java";
   let executable = Object.create(null);
   let options = Object.create(null);
   options.env = process.env;
