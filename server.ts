@@ -2,29 +2,29 @@ import * as net from "net";
 import * as express from "express";
 import * as url from "url";
 import * as ws from "ws";
-import * as socket from "socket.io";
 import * as path from "path";
-import * as rpc from "vscode-ws-jsonrpc";
 import * as cp from "child_process";
-import * as readline from "readline";
 import * as fs from "fs";
-import { StreamMessageReader } from './messageReader';
-import { SocketMessageWriter, StreamMessageWriter } from './messageWriter';
-import { createConnection } from "vscode-languageserver/lib/main";
+import { StreamMessageReader } from "./messageReader";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { ParsedUrlQuery } from "querystring";
 
-function prepareParams(
-  workspacePath = "/Users/sakura/Documents/java/spring-boot-start"
-) {
+import { initNewJavaLSProcess } from "./getPort";
+import ProcessManager from "./ProcessManager";
+import { IncomingMessage } from "http";
+import workspaceConvert from './workspaceConvert';
+
+const processManager = new ProcessManager();
+
+function prepareParams() {
   let params = [];
   params.push(
-    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=10345,quiet=y"
+    `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y`
   );
   params.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
   params.push("-Dosgi.bundles.defaultStartLevel=4");
   params.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
-  params.push("-Dlog.level=ALL");
+  params.push("-Dlog.level=2");
   params.push("-jar");
   params.push(
     "/Users/sakura/lsp/vscode-java/server/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
@@ -36,14 +36,11 @@ function prepareParams(
     configDir = "config_linux";
   }
   params.push("-configuration");
-  params.push("/Users/sakura/lsp/vscode-java/server/config_mac");
-  // params.push("-data");
-  // params.push(workspacePath);
+  params.push(`/Users/sakura/lsp/vscode-java/server/${configDir}`);
   return params;
 }
 function prepareExecutable() {
-  const javahome =
-    "/Library/java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home";
+  const javahome = "/Library/java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/bin/java";
   let executable = Object.create(null);
   let options = Object.create(null);
   options.env = process.env;
@@ -76,7 +73,7 @@ app.get("/content", (req: Request, res: Response) => {
   const urlPart: url.UrlWithParsedQuery = url.parse(req.url, true);
   const queryString: ParsedUrlQuery = urlPart.query;
   const { ws, file } = queryString;
-  fs.readFile(`${ws}/${file}`, (err: NodeJS.ErrnoException, data: Buffer) => {
+  fs.readFile(`${ws}${file}`, (err: NodeJS.ErrnoException, data: Buffer) => {
     if (err) {
       console.log(err.message);
     }
@@ -93,42 +90,46 @@ const webSocket = new ws.Server({
   maxPayload: 100 * 1024 * 1024
 });
 
-let ContentLength: string = 'Content-Length: ';
-let CRLF = '\r\n';
-
-const processCommand = prepareExecutable();
-const tspProcess = cp.spawn(processCommand.command, processCommand.args);
-
-tspProcess.on('error', (err) => {
-  console.warn(`java lsp has Error: ${err}`);
-});
+let ContentLength: string = "Content-Length: ";
+let CRLF = "\r\n";
 
 function launch(clientSocket) {
-  clientSocket.onMessage((data) => {
+  const processCommand = prepareExecutable();
+  const tspProcess = cp.spawn(processCommand.command, processCommand.args);
+
+  processManager.addProcess(tspProcess);
+  
+  tspProcess.on("error", err => {
+    console.warn(`java lsp has Error: ${err}`);
+  });
+
+  clientSocket.onMessage(data => {
     tspProcess.stdin.write(data);
   });
 
   clientSocket.onClose(() => {
-    tspProcess.kill();
-  })
+    const killed = processManager.kill(tspProcess.pid);
+    console.log(`${tspProcess.pid} has been killed!`);
+  });
 
   /**
    * 将标准输出转化为messageReader流
    */
-  const messageReader = new StreamMessageReader(tspProcess.stdout)
-  // const messageWriter = new StreamMessageWriter(clientSocket);
-  messageReader.listen((data) => {
+  const messageReader = new StreamMessageReader(tspProcess.stdout);
+  messageReader.listen(data => {
     const jsonrpcData = JSON.stringify(data);
-    Buffer.byteLength(jsonrpcData, 'utf-8');
+    Buffer.byteLength(jsonrpcData, "utf-8");
     let headers: string[] = [
-			ContentLength, jsonrpcData.length.toString(), CRLF,
-			CRLF
-		];
-    clientSocket.send(`${headers.join('')}${jsonrpcData}`);
-  })
+      ContentLength,
+      jsonrpcData.length.toString(),
+      CRLF,
+      CRLF
+    ];
+    clientSocket.send(`${headers.join("")}${jsonrpcData}`);
+  });
 }
 
-httpserver.on("upgrade", (req, socket, head) => {
+httpserver.on("upgrade", (req: IncomingMessage, socket: net.Socket, head: Buffer) => {
   const pathname = req.url ? url.parse(req.url).pathname : undefined;
   if (pathname === "/java") {
     webSocket.handleUpgrade(req, socket, head, web_socket => {
@@ -154,5 +155,11 @@ httpserver.on("upgrade", (req, socket, head) => {
         launch(socketconnect);
       }
     });
+  }
+});
+
+process.on("exit", () => {
+  if (processManager.count >= 1) {
+    processManager.killAll();
   }
 });

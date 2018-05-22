@@ -231,8 +231,12 @@ export class StreamMessageReader extends AbstractMessageReader implements Messag
 			this.clearPartialMessageTimer();
 			this.nextMessageLength = -1;
 			this.messageToken++;
-			var json = JSON.parse(msg);
-			this.callback(json);
+			try {
+				var json = JSON.parse(msg);
+				this.callback(json);
+			} catch (err) {
+				console.log(err);
+			}
 		}
 	}
 
