@@ -1,8 +1,12 @@
 import * as net from 'net';
 import * as cp from 'child_process';
 
+export interface IProcess {
+  spacekey: string;
+  process: cp.ChildProcess;
+}
 export default class ProcessManager {
-  private processList: Array<cp.ChildProcess>
+  private processList: Array<IProcess>
   constructor () {
     this.processList = [];
   }
@@ -14,20 +18,24 @@ export default class ProcessManager {
    * 
    * @param process ChildProcess
    */
-  public addProcess(process: cp.ChildProcess) {
+  public addProcess(process: IProcess) {
     this.processList.push(process);
     const length = this.processList.length;
     console.warn(`current process list has ${length} process`);
+  }
+
+  public getProcessByws(spacekey: string): IProcess {
+    return this.processList.find((p) => p.spacekey === spacekey);
   }
   /**
    * 
    * @param pid process ID
    */
-  public kill (pid: number) {
-    const process = this.processList.find((p) => p.pid === pid);
-    if (process) {
-      process.kill();
-      this.processList = this.processList.filter((p) => p.pid !== pid);
+  public kill (spacekey: string): boolean {
+    const iprocess = this.processList.find((p) => p.spacekey === spacekey);
+    if (iprocess) {
+      iprocess.process.kill();
+      this.processList = this.processList.filter((p) => p.spacekey !== spacekey);
       const length = this.processList.length;
       console.warn(`current process list has ${length} process`);
       return true;
@@ -40,7 +48,7 @@ export default class ProcessManager {
    */
   public killAll() {
     for (let i = 0; i < this.processList.length; i += 1) {
-      this.kill(this.processList[i].pid);
+      this.kill(this.processList[i].spacekey);
     }
   }
 }
