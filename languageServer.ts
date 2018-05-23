@@ -52,11 +52,10 @@ app.get("/content", (req: Request, res: Response) => {
 const socket = io(server);
 
 
-
 function prepareParams() {
   let params = [];
   params.push(
-    `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=19432,quiet=y`
+    `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y`
   );
   params.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
   params.push("-Dosgi.bundles.defaultStartLevel=4");
@@ -64,7 +63,7 @@ function prepareParams() {
   params.push("-Dlog.level=2");
   params.push("-jar");
   params.push(
-    "/data/coding-ide-home/repository/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
+    "/Users/sakura/lsp/vscode-java/server/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
   );
   let configDir = "config_win";
   if (process.platform === "darwin") {
@@ -73,7 +72,7 @@ function prepareParams() {
     configDir = "config_linux";
   }
   params.push("-configuration");
-  params.push(`/data/coding-ide-home/repository/${configDir}`);
+  params.push(`/Users/sakura/lsp/vscode-java/server/${configDir}`);
   return params;
 }
 function prepareExecutable() {
@@ -87,24 +86,26 @@ function prepareExecutable() {
   return executable;
 }
 
+const channelsManager = new ChannelsManager();
+
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
   const { ws } = urlPart.query
   websocket.emit('open');
-  websocket.join(<string>ws, () => {
+
+  if (!channelsManager.hasWs(<string>ws)) {
     const rooms: Array<any> = Object.keys(websocket.rooms)
-    let curProcess = processManager.getProcessByws(<string>ws);
-    if (!curProcess) {
-      const processCommand = prepareExecutable();
-      const childprocess = cp.spawn(processCommand.command, processCommand.args);
-      curProcess = { spacekey: <string>ws, process: childprocess }
-      processManager.addProcess(curProcess);
+    const processCommand = prepareExecutable();
+    const childprocess = cp.spawn(processCommand.command, processCommand.args);
+    const socketChannel = new SocketChannel(<string>ws, childprocess);
+    socketChannel.join(websocket);
+    channelsManager.add(socketChannel);
+  } else {
+    const socketChannel = channelsManager.findChannels(<string>ws);
+    if (!socketChannel.getClient(websocket.id)) {
+      socketChannel.join(websocket);
     }
-    handleMessageIO(websocket, curProcess.process);
-    websocket.on('close', () => {
-      processManager.kill(<string>ws);
-    })
-  });
+  }
 });
 
 server.listen(9988, () => {
