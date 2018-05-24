@@ -91,41 +91,41 @@ const webSocket = new ws.Server({
 let ContentLength: string = "Content-Length: ";
 let CRLF = "\r\n";
 
-function launch(clientSocket) {
-  const processCommand = prepareExecutable();
-  const tspProcess = cp.spawn(processCommand.command, processCommand.args);
+// function launch(clientSocket) {
+//   const processCommand = prepareExecutable();
+//   const tspProcess = cp.spawn(processCommand.command, processCommand.args);
 
-  processManager.addProcess(tspProcess);
+//   processManager.addProcess(tspProcess);
   
-  tspProcess.on("error", err => {
-    console.warn(`java lsp has Error: ${err}`);
-  });
+//   tspProcess.on("error", err => {
+//     console.warn(`java lsp has Error: ${err}`);
+//   });
 
-  clientSocket.onMessage(data => {
-    tspProcess.stdin.write(data);
-  });
+//   clientSocket.onMessage(data => {
+//     tspProcess.stdin.write(data);
+//   });
 
-  clientSocket.onClose(() => {
-    const killed = processManager.kill(tspProcess.pid);
-    console.log(`${tspProcess.pid} has been killed!`);
-  });
+//   clientSocket.onClose(() => {
+//     const killed = processManager.kill(tspProcess.pid);
+//     console.log(`${tspProcess.pid} has been killed!`);
+//   });
 
-  /**
-   * 将标准输出转化为messageReader流
-   */
-  const messageReader = new StreamMessageReader(tspProcess.stdout);
-  messageReader.listen(data => {
-    const jsonrpcData = JSON.stringify(data);
-    Buffer.byteLength(jsonrpcData, "utf-8");
-    let headers: string[] = [
-      ContentLength,
-      jsonrpcData.length.toString(),
-      CRLF,
-      CRLF
-    ];
-    clientSocket.send(`${headers.join("")}${jsonrpcData}`);
-  });
-}
+//   /**
+//    * 将标准输出转化为messageReader流
+//    */
+//   const messageReader = new StreamMessageReader(tspProcess.stdout);
+//   messageReader.listen(data => {
+//     const jsonrpcData = JSON.stringify(data);
+//     Buffer.byteLength(jsonrpcData, "utf-8");
+//     let headers: string[] = [
+//       ContentLength,
+//       jsonrpcData.length.toString(),
+//       CRLF,
+//       CRLF
+//     ];
+//     clientSocket.send(`${headers.join("")}${jsonrpcData}`);
+//   });
+// }
 
 httpserver.on("upgrade", (req: IncomingMessage, socket: net.Socket, head: Buffer) => {
   const pathname = req.url ? url.parse(req.url).pathname : undefined;
@@ -150,7 +150,7 @@ httpserver.on("upgrade", (req: IncomingMessage, socket: net.Socket, head: Buffer
         dispose: () => web_socket.close()
       };
       if (web_socket.readyState === web_socket.OPEN) {
-        launch(socketconnect);
+        // launch(socketconnect);
       }
     });
   }

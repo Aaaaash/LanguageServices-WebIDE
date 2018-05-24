@@ -63,7 +63,7 @@ function prepareParams(spacekey) {
   params.push("-Dlog.level=2");
   params.push("-jar");
   params.push(
-    "/Users/sakura/lsp/vscode-java/server/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
+    "/data/coding-ide-home/repository/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
   );
   let configDir = "config_win";
   if (process.platform === "darwin") {
@@ -72,7 +72,7 @@ function prepareParams(spacekey) {
     configDir = "config_linux";
   }
   params.push("-configuration");
-  params.push(`/Users/sakura/lsp/vscode-java/server/${configDir}`);
+  params.push(`/data/coding-ide-home/repository/${configDir}`);
   // params.push('-data');
   // params.push(spacekey);
   return params;
