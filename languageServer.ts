@@ -52,7 +52,7 @@ app.get("/content", (req: Request, res: Response) => {
 const socket = io(server);
 
 
-function prepareParams() {
+function prepareParams(spacekey) {
   let params = [];
   params.push(
     `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y`
@@ -73,16 +73,18 @@ function prepareParams() {
   }
   params.push("-configuration");
   params.push(`/Users/sakura/lsp/vscode-java/server/${configDir}`);
+  // params.push('-data');
+  // params.push(spacekey);
   return params;
 }
-function prepareExecutable() {
+function prepareExecutable(spacekey) {
   let executable = Object.create(null);
   let options = Object.create(null);
   options.env = process.env;
   options.stdio = "pipe";
   executable.options = options;
   executable.command = "java";
-  executable.args = prepareParams();
+  executable.args = prepareParams(spacekey);
   return executable;
 }
 
@@ -91,14 +93,13 @@ export const channelsManager = new ChannelsManager();
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
   const { ws } = urlPart.query
-  websocket.emit('open');
-
+  socket.emit('open');
   if (!channelsManager.hasWs(<string>ws)) {
     console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
-    const processCommand = prepareExecutable();
+    const processCommand = prepareExecutable(ws);
     const childprocess = cp.spawn(processCommand.command, processCommand.args);
-    console.log(processCommand.args.join(' '));
+    processManager.addProcess({ spacekey: <string>ws, process: childprocess });
     const socketChannel = new SocketChannel(<string>ws, childprocess);
     socketChannel.join(websocket);
     channelsManager.add(socketChannel);

@@ -34,6 +34,7 @@ export default class ProcessManager {
   public kill (spacekey: string): boolean {
     const iprocess = this.processList.find((p) => p.spacekey === spacekey);
     if (iprocess) {
+      console.log('process is find');
       iprocess.process.kill();
       this.processList = this.processList.filter((p) => p.spacekey !== spacekey);
       const length = this.processList.length;

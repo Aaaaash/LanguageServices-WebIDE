@@ -6,6 +6,7 @@ import { processManager, channelsManager } from './languageServer';
 export default class SocketChannel {
   connections: Array<io.Socket>
   constructor (public spaceKey: string, public lspProcess: cp.ChildProcess) {
+    console.log(`langserver launch for ${spaceKey}`);
     this.connections = [];
   }
 
@@ -14,8 +15,10 @@ export default class SocketChannel {
     this.connections.push(connect);
     this.initMessageReader(connect);
     connect.on('disconnect', () => {
-      this.connections = this.connections.filter((c) => c.id === connect.id);
+      this.connections = this.connections.filter((c) => c.id !== connect.id);
+      console.log('socket is disconnect');
       if (this.connections.length === 0) {
+        console.log('all process will be kill');
         processManager.kill(this.spaceKey);
         channelsManager.leave(this.spaceKey);
       }
