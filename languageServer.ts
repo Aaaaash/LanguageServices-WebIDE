@@ -15,7 +15,7 @@ import ProcessManager from "./ProcessManager";
 import handleMessageIO from './handleMessageIO';
 
 import { IProcess } from './ProcessManager';
-const processManager = new ProcessManager();
+export const processManager = new ProcessManager();
 
 const app = express();
 
@@ -86,7 +86,7 @@ function prepareExecutable() {
   return executable;
 }
 
-const channelsManager = new ChannelsManager();
+export const channelsManager = new ChannelsManager();
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
@@ -94,13 +94,16 @@ socket.on('connection', (websocket: io.Socket) => {
   websocket.emit('open');
 
   if (!channelsManager.hasWs(<string>ws)) {
+    console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
     const childprocess = cp.spawn(processCommand.command, processCommand.args);
+    console.log(processCommand.args.join(' '));
     const socketChannel = new SocketChannel(<string>ws, childprocess);
     socketChannel.join(websocket);
     channelsManager.add(socketChannel);
   } else {
+    console.log(`${ws} is ready`);
     const socketChannel = channelsManager.findChannels(<string>ws);
     if (!socketChannel.getClient(websocket.id)) {
       socketChannel.join(websocket);

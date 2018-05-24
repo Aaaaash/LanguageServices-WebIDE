@@ -2,7 +2,7 @@ import * as io from 'socket.io';
 import * as cp from 'child_process';
 
 import handleMessageIO from './handleMessageIO';
-
+import { processManager, channelsManager } from './languageServer';
 export default class SocketChannel {
   connections: Array<io.Socket>
   constructor (public spaceKey: string, public lspProcess: cp.ChildProcess) {
@@ -13,6 +13,13 @@ export default class SocketChannel {
     if (this.hasConnect(connect.id)) return;
     this.connections.push(connect);
     this.initMessageReader(connect);
+    connect.on('disconnect', () => {
+      this.connections = this.connections.filter((c) => c.id === connect.id);
+      if (this.connections.length === 0) {
+        processManager.kill(this.spaceKey);
+        channelsManager.leave(this.spaceKey);
+      }
+    });
   }
 
   private initMessageReader = (connect: io.Socket) => {
