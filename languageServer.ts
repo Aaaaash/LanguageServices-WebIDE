@@ -114,8 +114,8 @@ socket.on('connection', (websocket: io.Socket) => {
   }
 });
 
-server.listen(1293, () => {
-  console.log('Web Server start in 1293 port!');
+server.listen(9988, () => {
+  console.log('Web Server start in 9988 port!');
 });
 
 process.on('exit', () => {
