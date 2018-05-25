@@ -21,6 +21,8 @@ const app = express();
 
 const server = http.createServer(app);
 
+const baseURI = process.env.NODE_ENV === 'dev' ? '/Users/sakura/lsp/vscode-java/server' : '/data/coding-ide-home/repository';
+console.log(process.env.NODE_ENV);
 app.all("*", function(req: Request, res: Response, next: NextFunction) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -63,7 +65,7 @@ function prepareParams(spacekey) {
   params.push("-Dlog.level=2");
   params.push("-jar");
   params.push(
-    "/data/coding-ide-home/repository/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar"
+    `${baseURI}/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar`
   );
   let configDir = "config_win";
   if (process.platform === "darwin") {
@@ -72,7 +74,7 @@ function prepareParams(spacekey) {
     configDir = "config_linux";
   }
   params.push("-configuration");
-  params.push(`/data/coding-ide-home/repository/${configDir}`);
+  params.push(`${baseURI}/${configDir}`);
   // params.push('-data');
   // params.push(spacekey);
   return params;
@@ -112,8 +114,8 @@ socket.on('connection', (websocket: io.Socket) => {
   }
 });
 
-server.listen(9988, () => {
-  console.log('Web Server start in 9988 port!');
+server.listen(1293, () => {
+  console.log('Web Server start in 1293 port!');
 });
 
 process.on('exit', () => {

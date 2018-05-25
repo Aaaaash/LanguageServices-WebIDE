@@ -17,6 +17,7 @@ export default class SocketChannel {
     connect.on('disconnect', () => {
       this.connections = this.connections.filter((c) => c.id !== connect.id);
       console.log('socket is disconnect');
+      connect.removeAllListeners();
       if (this.connections.length === 0) {
         console.log('all process will be kill');
         processManager.kill(this.spaceKey);
