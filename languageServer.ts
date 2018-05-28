@@ -56,10 +56,10 @@ const socket = io(server);
 
 function prepareParams(spacekey) {
   let params = [];
+  params.push('-Xmx256m')
   params.push(
     `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y`
   );
-  params.push('-Xmx128m')
   params.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
   params.push("-Dosgi.bundles.defaultStartLevel=4");
   params.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
