@@ -6,6 +6,6 @@ WORKDIR /home/service
 
 # build app source
 COPY . /home/service
-RUN npm install
+RUN npm install --registry=https://registry.npm.taobao.org
 EXPOSE 9988
 CMD [ "npm", "start" ]
