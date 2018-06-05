@@ -13,6 +13,7 @@ import * as io from 'socket.io';
 import { StreamMessageReader} from './messageReader';
 import ProcessManager from "./ProcessManager";
 import handleMessageIO from './handleMessageIO';
+import { executable } from './javaserver';
 
 import { IProcess } from './ProcessManager';
 export const processManager = new ProcessManager();
@@ -21,8 +22,6 @@ const app = express();
 
 const server = http.createServer(app);
 
-const baseURI = process.env.NODE_ENV === 'dev' ? '/Users/sakura/lsp/vscode-java/server' : '/data/coding-ide-home/repository';
-console.log(process.env.NODE_ENV);
 app.all("*", function(req: Request, res: Response, next: NextFunction) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -54,53 +53,16 @@ app.get("/content", (req: Request, res: Response) => {
 const socket = io(server);
 
 
-function prepareParams(spacekey) {
-  let params = [];
-  params.push('-Xmx256m')
-  params.push(
-    `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y`
-  );
-  params.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
-  params.push("-Dosgi.bundles.defaultStartLevel=4");
-  params.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
-  params.push("-Dlog.level=2");
-  params.push("-jar");
-  params.push(
-    `${baseURI}/plugins/org.eclipse.equinox.launcher_1.5.0.v20180207-1446.jar`
-  );
-  let configDir = "config_win";
-  if (process.platform === "darwin") {
-    configDir = "config_mac";
-  } else if (process.platform === "linux") {
-    configDir = "config_linux";
-  }
-  params.push("-configuration");
-  params.push(`${baseURI}/${configDir}`);
-  // params.push('-data');
-  // params.push(spacekey);
-  return params;
-}
-function prepareExecutable(spacekey) {
-  let executable = Object.create(null);
-  let options = Object.create(null);
-  options.env = process.env;
-  options.stdio = "pipe";
-  executable.options = options;
-  executable.command = "java";
-  executable.args = prepareParams(spacekey);
-  return executable;
-}
-
 export const channelsManager = new ChannelsManager();
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
-  const { ws } = urlPart.query
+  const { ws, language } = urlPart.query
   socket.emit('open');
   if (!channelsManager.hasWs(<string>ws)) {
     console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
-    const processCommand = prepareExecutable(ws);
+    const processCommand = executable;
     const childprocess = cp.spawn(processCommand.command, processCommand.args);
     processManager.addProcess({ spacekey: <string>ws, process: childprocess });
     const socketChannel = new SocketChannel(<string>ws, childprocess);
