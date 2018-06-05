@@ -8,4 +8,4 @@ WORKDIR /home/service
 COPY . /home/service
 RUN npm install --registry=https://registry.npm.taobao.org
 EXPOSE 9988
-CMD [ "npm", "start" ]
+CMD [ "/bin/bash", "npm", "start" ]
