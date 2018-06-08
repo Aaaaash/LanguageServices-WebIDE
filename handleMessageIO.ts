@@ -6,9 +6,7 @@ let ContentLength: string = "Content-Length: ";
 let CRLF = "\r\n";
 
 export default function handleMessageIO(socket: io.Socket, process: cp.ChildProcess) {
-  let fileUri;
-  socket.on('message', ({ uri, message }) => {
-    fileUri = uri;
+  socket.on('message', ({ message }) => {
     process.stdin.write(message);
   });
 
@@ -25,6 +23,6 @@ export default function handleMessageIO(socket: io.Socket, process: cp.ChildProc
       CRLF,
       CRLF
     ];
-    socket.send({ uri: fileUri, data: `${headers.join("")}${jsonrpcData}` });
+    socket.send({ data: `${headers.join("")}${jsonrpcData}` });
   });
 }

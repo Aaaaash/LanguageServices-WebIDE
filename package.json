@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "export NODE_ENV=prod && node out/languageServer.js",
-    "dev": "export NODE_ENV=dev && ts-node languageServer.ts",
+    "dev": "export NODE_ENV=dev && tsc && node out/languageServer.js",
     "build": "rm -rf out && tsc",
     "build:start": "rm -rf out && tsc && node out/languageServer.js"
   },
