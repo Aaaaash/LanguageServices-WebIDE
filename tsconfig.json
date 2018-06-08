@@ -12,7 +12,9 @@
 		"skipLibCheck": true
 	},
 	"include": [
-		"out",
+		"node_modules",
+		"server",
+		".vscode-test"
 	]
   }
   
