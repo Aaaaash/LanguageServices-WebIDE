@@ -14,6 +14,7 @@ import { prepareExecutable } from './config';
 import { StreamMessageReader} from './messageReader';
 import ProcessManager from "./ProcessManager";
 import handleMessageIO from './handleMessageIO';
+import { executable } from './javaserver';
 
 import { IProcess } from './ProcessManager';
 export const processManager = new ProcessManager();
@@ -22,8 +23,6 @@ const app = express();
 
 const server = http.createServer(app);
 
-const baseURI = process.env.NODE_ENV === 'dev' ? '/Users/sakura/lsp/vscode-java/server' : '/data/coding-ide-home/repository';
-console.log(process.env.NODE_ENV);
 app.all("*", function(req: Request, res: Response, next: NextFunction) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -58,7 +57,7 @@ export const channelsManager = new ChannelsManager();
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
-  const { ws } = urlPart.query
+  const { ws, language } = urlPart.query
   socket.emit('open');
   if (!channelsManager.hasWs(<string>ws)) {
     console.log(`${ws} is first visit!`);
