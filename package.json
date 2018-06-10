@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "prestart": "gulp download-server",
     "start": "export NODE_ENV=prod && node out/languageServer.js",
     "dev": "export NODE_ENV=dev && tsc && node out/languageServer.js",
     "build": "rm -rf out && tsc",
@@ -15,6 +16,9 @@
     "@types/socket.io": "^1.4.33",
     "@types/ws": "^5.1.1",
     "express": "^4.16.3",
+    "gulp": "^3.9.1",
+    "gulp-decompress": "^2.0.2",
+    "gulp-download": "^0.0.1",
     "socket.io": "^2.1.1",
     "vscode": "^1.1.17",
     "vscode-languageclient": "^4.1.4",
