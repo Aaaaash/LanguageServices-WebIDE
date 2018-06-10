@@ -64,7 +64,11 @@ socket.on('connection', (websocket: io.Socket) => {
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
     console.log(processCommand.args.join(' '));
-    const childprocess = cp.spawn(processCommand.command, processCommand.args);
+    try {
+      const childprocess = cp.spawn(processCommand.command, processCommand.args);
+    } catch(err) {
+      console.log(err.message);
+    }
     processManager.addProcess({ spacekey: <string>ws, process: childprocess });
     const socketChannel = new SocketChannel(<string>ws, childprocess);
     socketChannel.join(websocket);
