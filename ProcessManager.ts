@@ -48,6 +48,7 @@ export default class ProcessManager {
    * kill all ChildProcess
    */
   public killAll() {
+    console.log('process will be killed!');
     for (let i = 0; i < this.processList.length; i += 1) {
       this.kill(this.processList[i].spacekey);
     }

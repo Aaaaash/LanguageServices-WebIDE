@@ -22,6 +22,11 @@ export default function handleMessageIO(socket: io.Socket, process: cp.ChildProc
    * 将标准输出转化为messageReader流
    */
   const messageReader = new StreamMessageReader(process.stdout);
+
+  messageReader.onError((err) => {
+    console.log(err.message);
+  });
+
   messageReader.listen((data) => {
     const jsonrpcData = JSON.stringify(data);
     Buffer.byteLength(jsonrpcData, "utf-8");
