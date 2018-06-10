@@ -17,7 +17,6 @@ import handleMessageIO from './handleMessageIO';
 import { executable } from './javaserver';
 
 import { IProcess } from './ProcessManager';
-export const processManager = new ProcessManager();
 
 const app = express();
 
@@ -54,11 +53,11 @@ app.get("/content", (req: Request, res: Response) => {
 const socket = io(server);
 
 export const channelsManager = new ChannelsManager();
+export const processManager = new ProcessManager();
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
-  const { ws, language } = urlPart.query
-  socket.emit('open');
+  const { ws } = urlPart.query
   if (!channelsManager.hasWs(<string>ws)) {
     console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
@@ -82,6 +81,9 @@ socket.on('connection', (websocket: io.Socket) => {
   }
 });
 
+socket.on('error', (err) => {
+  console.log(err.message);
+});
 server.listen(9988, () => {
   console.log('Web Server start in 9988 port!');
 });

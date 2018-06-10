@@ -2,7 +2,7 @@ import * as glob from 'glob';
 
 export const SERVER_HOME = 'lsp-java-server';
 
-export const BASE_URI = `./${SERVER_HOME}`;
+export const BASE_URI = process.env.NODE_ENV === 'dev' ? `/Users/sakura/lsp/node-lsp-tcp/${SERVER_HOME}` : `/data/coding-ide-home/node-lsp-tcp/${SERVER_HOME}`;
 export const CONFIG_DIR = process.platform === 'darwin' ? 'config_mac' : process.platform === 'linux' ? 'config_linux' : 'config_win';
 
 export type IJavaExecutable = {
@@ -18,13 +18,13 @@ if (launchersFound.length === 0 || !launchersFound) {
 }
 
 export const params: Array<string> = [
-  '-Xmx256m',
-  '-Xms256m',
   '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y',
   '-Declipse.application=org.eclipse.jdt.ls.core.id1',
   '-Dosgi.bundles.defaultStartLevel=4',
   '-noverify',
   '-Declipse.product=org.eclipse.jdt.ls.core.product',
+  '-Xmx256m',
+  '-Xms256m',
   '-jar',
   `${BASE_URI}/${launchersFound[0]}`,
   '-configuration',

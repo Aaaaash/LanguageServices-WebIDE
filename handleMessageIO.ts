@@ -7,6 +7,7 @@ let CRLF = "\r\n";
 
 export default function handleMessageIO(socket: io.Socket, process: cp.ChildProcess) {
   socket.on('message', ({ message }) => {
+    // console.lo
     try {
       process.stdin.write(message);
     } catch (err) {
@@ -17,7 +18,6 @@ export default function handleMessageIO(socket: io.Socket, process: cp.ChildProc
       }
     }
   });
-
   /**
    * 将标准输出转化为messageReader流
    */
