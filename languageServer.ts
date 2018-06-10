@@ -86,6 +86,11 @@ server.listen(9988, () => {
   console.log('Web Server start in 9988 port!');
 });
 
+process.on('uncaughtException', function(err) {
+  console.log(err.stack);
+  console.log('NOT exit...');
+});
+
 process.on('exit', () => {
   processManager.killAll();
 });
