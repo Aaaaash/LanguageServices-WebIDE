@@ -63,7 +63,6 @@ socket.on('connection', (websocket: io.Socket) => {
     console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
-    console.log(processCommand.args.join(' '));
     const childprocess = cp.spawn(processCommand.command, processCommand.args);
     processManager.addProcess({ spacekey: <string>ws, process: childprocess });
     const socketChannel = new SocketChannel(<string>ws, childprocess);

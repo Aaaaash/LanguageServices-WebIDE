@@ -8,7 +8,7 @@
     "start": "export NODE_ENV=prod && node out/languageServer.js",
     "dev": "export NODE_ENV=dev && tsc && node out/languageServer.js",
     "build": "rm -rf out && tsc",
-    "build:start": "rm -rf out && tsc && node out/languageServer.js"
+    "build:start": "npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
     "@types/express": "^4.11.1",

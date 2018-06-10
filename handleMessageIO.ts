@@ -7,7 +7,15 @@ let CRLF = "\r\n";
 
 export default function handleMessageIO(socket: io.Socket, process: cp.ChildProcess) {
   socket.on('message', ({ message }) => {
-    process.stdin.write(message);
+    try {
+      process.stdin.write(message);
+    } catch (err) {
+      if (err.message) {
+        console.log(err.message)
+      } else {
+        console.log(err);
+      }
+    }
   });
 
   /**
