@@ -66,13 +66,13 @@ socket.on('connection', (websocket: io.Socket) => {
     console.log(processCommand.args.join(' '));
     try {
       const childprocess = cp.spawn(processCommand.command, processCommand.args);
+      processManager.addProcess({ spacekey: <string>ws, process: childprocess });
+      const socketChannel = new SocketChannel(<string>ws, childprocess);
+      socketChannel.join(websocket);
+      channelsManager.add(socketChannel);
     } catch(err) {
       console.log(err.message);
     }
-    processManager.addProcess({ spacekey: <string>ws, process: childprocess });
-    const socketChannel = new SocketChannel(<string>ws, childprocess);
-    socketChannel.join(websocket);
-    channelsManager.add(socketChannel);
   } else {
     console.log(`${ws} is ready`);
     const socketChannel = channelsManager.findChannels(<string>ws);
