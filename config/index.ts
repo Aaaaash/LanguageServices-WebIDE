@@ -20,7 +20,6 @@ if (launchersFound.length === 0 || !launchersFound) {
 export const params: Array<string> = [
   '-Xmx256m',
   '-Xms256m',
-  '-Xmn256m',
   '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y',
   '-Declipse.application=org.eclipse.jdt.ls.core.id1',
   '-Dosgi.bundles.defaultStartLevel=4',
