@@ -54,7 +54,7 @@ socket.on('connection', (websocket: io.Socket) => {
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
     processCommand.args.push('-data');
-    processCommand.args.push(`/data/coding-ide-home/workspace/${ws}`);
+    processCommand.args.push(`/data/coding-ide-home/lsp-workspace/${ws}`);
     console.log(processCommand.args.join(' '));
     try {
       const childprocess = cp.spawn(processCommand.command, processCommand.args);
