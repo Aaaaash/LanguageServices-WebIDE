@@ -53,11 +53,13 @@ socket.on('connection', (websocket: io.Socket) => {
   if (!channelsManager.hasWs(<string>ws)) {
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
-    processCommand.args.push('-data');
-    processCommand.args.push(`/data/coding-ide-home/lsp-workspace/${ws}`);
-    console.log(processCommand.args.join(' '));
+    const newArgs = [
+      '-data',
+      `/data/coding-ide-home/lsp-workspace/${ws}`
+    ];
+    console.log(`[LSP-DATA]: ${newArgs.join(' ')}`);
     try {
-      const childprocess = cp.spawn(processCommand.command, processCommand.args);
+      const childprocess = cp.spawn(processCommand.command, [...processCommand.args, ...newArgs]);
       processManager.addProcess({ spacekey: <string>ws, process: childprocess });
       const socketChannel = new SocketChannel(<string>ws, childprocess);
       socketChannel.join(websocket);
