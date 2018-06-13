@@ -1,4 +1,3 @@
-import * as WebSocket from 'ws';
 import * as http from 'http';
 import * as express from 'express';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
@@ -7,17 +6,10 @@ import * as fs from "fs";
 import * as cp from 'child_process';
 import ChannelsManager from './ChannelsManager';
 import SocketChannel from './SocketChannel';
-import { Socket } from 'net';
 import { ParsedUrlQuery } from "querystring";
 import * as io from 'socket.io';
-import { prepareExecutable } from './config';
-import { StreamMessageReader} from './messageReader';
+import { prepareExecutable, PORT } from './config';
 import ProcessManager from "./ProcessManager";
-import handleMessageIO from './handleMessageIO';
-import { executable } from './javaserver';
-
-import { IProcess } from './ProcessManager';
-
 const app = express();
 
 const server = http.createServer(app);
@@ -59,9 +51,10 @@ socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
   const { ws } = urlPart.query
   if (!channelsManager.hasWs(<string>ws)) {
-    console.log(`${ws} is first visit!`);
     const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
+    processCommand.args.push('-data');
+    processCommand.args.push(`/data/coding-ide-home/workspace/${ws}`);
     console.log(processCommand.args.join(' '));
     try {
       const childprocess = cp.spawn(processCommand.command, processCommand.args);
@@ -74,17 +67,14 @@ socket.on('connection', (websocket: io.Socket) => {
     }
   } else {
     console.log(`${ws} is ready`);
-    const socketChannel = channelsManager.findChannels(<string>ws);
-    if (!socketChannel.getClient(websocket.id)) {
-      socketChannel.join(websocket);
-    }
   }
 });
 
 socket.on('error', (err) => {
   console.log(err.message);
 });
-server.listen(9988, () => {
+
+server.listen(PORT, () => {
   console.log('Web Server start in 9988 port!');
 });
 
