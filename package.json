@@ -19,6 +19,7 @@
     "gulp": "^3.9.1",
     "gulp-decompress": "^2.0.2",
     "gulp-download": "^0.0.1",
+    "log4js": "^2.11.0",
     "socket.io": "^2.1.1",
     "vscode": "^1.1.17",
     "vscode-languageclient": "^4.1.4",

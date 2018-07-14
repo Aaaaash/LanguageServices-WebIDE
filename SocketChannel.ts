@@ -1,12 +1,13 @@
 import * as io from 'socket.io';
 import * as cp from 'child_process';
 
+import { logger } from './languageServer';
 import handleMessageIO from './handleMessageIO';
 import { processManager, channelsManager } from './languageServer';
 export default class SocketChannel {
   connections: Array<io.Socket>
   constructor (public spaceKey: string, public lspProcess: cp.ChildProcess) {
-    console.log(`langserver launch for ${spaceKey}`);
+    logger.info(`langserver launch for ${spaceKey}`);
     this.connections = [];
   }
 
@@ -16,10 +17,10 @@ export default class SocketChannel {
     this.initMessageReader(connect);
     connect.on('disconnect', () => {
       this.connections = this.connections.filter((c) => c.id !== connect.id);
-      console.log('socket is disconnect');
+      logger.info('socket is disconnect');
       connect.removeAllListeners();
       if (this.connections.length === 0) {
-        console.log('all process will be kill');
+        logger.info('all process will be kill');
         processManager.kill(this.spaceKey);
         channelsManager.leave(this.spaceKey);
       }

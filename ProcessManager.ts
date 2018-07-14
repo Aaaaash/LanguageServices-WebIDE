@@ -1,5 +1,6 @@
 import * as net from 'net';
 import * as cp from 'child_process';
+import { logger } from './languageServer';
 
 export interface IProcess {
   spacekey: string;
@@ -34,11 +35,11 @@ export default class ProcessManager {
   public kill (spacekey: string): boolean {
     const iprocess = this.processList.find((p) => p.spacekey === spacekey);
     if (iprocess) {
-      console.log('process is find');
+      logger.info('process is find');
       iprocess.process.kill();
       this.processList = this.processList.filter((p) => p.spacekey !== spacekey);
       const length = this.processList.length;
-      console.warn(`current process list has ${length} process`);
+      logger.info(`current process list has ${length} process`);
       return true;
     }
     return false;
@@ -48,7 +49,7 @@ export default class ProcessManager {
    * kill all ChildProcess
    */
   public killAll() {
-    console.log('process will be killed!');
+    logger.info('process will be killed!');
     for (let i = 0; i < this.processList.length; i += 1) {
       this.kill(this.processList[i].spacekey);
     }

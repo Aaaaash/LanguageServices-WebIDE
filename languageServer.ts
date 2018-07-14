@@ -10,7 +10,11 @@ import { ParsedUrlQuery } from "querystring";
 import * as io from 'socket.io';
 import { prepareExecutable, PORT } from './config';
 import ProcessManager from "./ProcessManager";
+import * as log4js from 'log4js';
 const app = express();
+
+export const logger = log4js.getLogger();
+logger.level = 'debug';
 
 const server = http.createServer(app);
 
@@ -33,7 +37,7 @@ app.get("/content", (req: Request, res: Response) => {
   const { ws, file } = queryString;
   fs.readFile(`${ws}${file}`, (err: NodeJS.ErrnoException, data: Buffer) => {
     if (err) {
-      console.log(err.message);
+      logger.warn(err.message);
     }
     res.send({
       data: data.toString(),
@@ -55,9 +59,8 @@ socket.on('connection', (websocket: io.Socket) => {
     const processCommand = prepareExecutable();
     const newArgs = [
       '-data',
-      `/data/coding-ide-home/lsp-workspace/${ws}`
+      `${ws}`
     ];
-    console.log(`[LSP-DATA]: ${newArgs.join(' ')}`);
     try {
       const childprocess = cp.spawn(processCommand.command, [...processCommand.args, ...newArgs]);
       processManager.addProcess({ spacekey: <string>ws, process: childprocess });
@@ -65,23 +68,23 @@ socket.on('connection', (websocket: io.Socket) => {
       socketChannel.join(websocket);
       channelsManager.add(socketChannel);
     } catch(err) {
-      console.log(err.message);
+      logger.info(err.message);
     }
   } else {
-    console.log(`${ws} is ready`);
+    logger.warn(`${ws} is ready`);
   }
 });
 
 socket.on('error', (err) => {
-  console.log(err.message);
+  logger.error(err.message);
 });
 
 server.listen(PORT, () => {
-  console.log('Web Server start in 9988 port!');
+  logger.info('Web Server start in 9988 port!');
 });
 
 process.on('uncaughtException', function(err) {
-  console.log(err.stack);
+  logger.error(err.stack);
 });
 
 process.on('exit', () => {

@@ -2,6 +2,8 @@ import * as io from 'socket.io';
 import * as cp from 'child_process';
 import { StreamMessageReader } from './messageReader';
 
+import { logger } from './languageServer';
+
 let ContentLength: string = "Content-Length: ";
 let CRLF = "\r\n";
 
@@ -12,9 +14,9 @@ export default function handleMessageIO(socket: io.Socket, process: cp.ChildProc
       process.stdin.write(message);
     } catch (err) {
       if (err.message) {
-        console.log(err.message)
+        logger.error(err.message)
       } else {
-        console.log(err);
+        logger.error(err);
       }
     }
   });
@@ -24,7 +26,7 @@ export default function handleMessageIO(socket: io.Socket, process: cp.ChildProc
   const messageReader = new StreamMessageReader(process.stdout);
 
   messageReader.onError((err) => {
-    console.log(err.message);
+    logger.error(err.message);
   });
 
   messageReader.listen((data) => {
