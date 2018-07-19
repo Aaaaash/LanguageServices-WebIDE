@@ -11,11 +11,9 @@
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
-    "@types/express": "^4.11.1",
     "@types/node": "^10.1.0",
     "@types/socket.io": "^1.4.33",
     "@types/ws": "^5.1.1",
-    "express": "^4.16.3",
     "gulp": "^3.9.1",
     "gulp-decompress": "^2.0.2",
     "gulp-download": "^0.0.1",

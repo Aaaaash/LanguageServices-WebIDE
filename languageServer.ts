@@ -1,50 +1,17 @@
 import * as http from 'http';
-import * as express from 'express';
-import { Request, Response, NextFunction } from 'express-serve-static-core';
 import * as url from 'url';
-import * as fs from "fs";
 import * as cp from 'child_process';
 import ChannelsManager from './ChannelsManager';
 import SocketChannel from './SocketChannel';
-import { ParsedUrlQuery } from "querystring";
 import * as io from 'socket.io';
 import { prepareExecutable, PORT } from './config';
 import ProcessManager from "./ProcessManager";
 import * as log4js from 'log4js';
-const app = express();
 
 export const logger = log4js.getLogger();
 logger.level = 'debug';
 
-const server = http.createServer(app);
-
-app.all("*", function(req: Request, res: Response, next: NextFunction) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,Content-Length, Authorization, Accept,X-Requested-With"
-  );
-  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-  res.header("X-Powered-By", " 3.2.1");
-  if (req.method == "OPTIONS") res.send(200);
-  else next();
-});
-
-
-app.get("/content", (req: Request, res: Response) => {
-  const urlPart: url.UrlWithParsedQuery = url.parse(req.url, true);
-  const queryString: ParsedUrlQuery = urlPart.query;
-  const { ws, file } = queryString;
-  fs.readFile(`${ws}${file}`, (err: NodeJS.ErrnoException, data: Buffer) => {
-    if (err) {
-      logger.warn(err.message);
-    }
-    res.send({
-      data: data.toString(),
-      code: 0
-    });
-  });
-});
+const server = http.createServer();
 
 const socket = io(server);
 
@@ -55,7 +22,6 @@ socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true)
   const { ws } = urlPart.query
   if (!channelsManager.hasWs(<string>ws)) {
-    const rooms: Array<any> = Object.keys(websocket.rooms)
     const processCommand = prepareExecutable();
     const newArgs = [
       '-data',
