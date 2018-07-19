@@ -5,6 +5,7 @@ import { logger } from './languageServer';
 export interface IProcess {
   spacekey: string;
   process: cp.ChildProcess;
+  language: string;
 }
 export default class ProcessManager {
   private processList: Array<IProcess>
