@@ -8,7 +8,7 @@ import { IProcess } from './ProcessManager';
 let ContentLength: string = 'Content-Length: ';
 let CRLF = "\r\n";
 
-export default function handleMessageIO(socket: io.Socket, lspServerProcess: IProcess) {
+export default function handleStdioMessage(socket: io.Socket, lspServerProcess: IProcess) {
   socket.on('message', ({ message }) => {
     try {
       lspServerProcess.process.stdin.write(message);

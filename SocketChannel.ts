@@ -2,11 +2,13 @@ import * as io from 'socket.io';
 import * as cp from 'child_process';
 
 import { logger } from './languageServer';
-import handleMessageIO from './handleMessageIO';
+import handleStdioMessage from './handleStdioMessage';
 import { processManager, channelsManager } from './languageServer';
+import { IProcess } from './ProcessManager';
+
 export default class SocketChannel {
   connections: Array<io.Socket>
-  constructor (public spaceKey: string, public lspProcess: cp.ChildProcess) {
+  constructor (public spaceKey: string, public lspServerProcess: IProcess) {
     logger.info(`langserver launch for ${spaceKey}`);
     this.connections = [];
   }
@@ -20,7 +22,7 @@ export default class SocketChannel {
       logger.info('socket is disconnect');
       connect.removeAllListeners();
       if (this.connections.length === 0) {
-        logger.info('all process will be kill');
+        logger.info('All process will be kill.');
         processManager.kill(this.spaceKey);
         channelsManager.leave(this.spaceKey);
       }
@@ -28,7 +30,7 @@ export default class SocketChannel {
   }
 
   private initMessageReader = (connect: io.Socket) => {
-    handleMessageIO(connect, this.lspProcess);
+    handleStdioMessage(connect, this.lspServerProcess);
   }
 
   public getClient = (id: string): io.Socket => {

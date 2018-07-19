@@ -27,7 +27,7 @@ export default class ProcessManager {
   }
 
   public getProcessByws(spacekey: string): IProcess {
-    return this.processList.find((p) => p.spacekey === spacekey);
+    return this.processList.find((p: IProcess) => p.spacekey === spacekey);
   }
   /**
    * 

@@ -18,9 +18,22 @@ const socket = io(server);
 export const channelsManager = new ChannelsManager();
 export const processManager = new ProcessManager();
 
-socket.on("connection", (websocket: io.Socket) => {
+socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true);
+
   const { ws, language } = urlPart.query;
+  if (!ws) {
+    logger.error(`Missing required parameter 'ws'.`);
+    websocket.send({ data: `Missing required parameter 'ws'.` });
+    return;
+  }
+
+  if (!language) {
+    logger.error(`Missing required parameter 'language'.`);
+    websocket.send({ data: `Missing required parameter 'language'.` });
+    return;
+  }
+
   if (!channelsManager.hasWs(<string>ws)) {
     const processCommand = prepareExecutable();
     const newArgs = ["-data", `${ws}`];
@@ -34,7 +47,8 @@ socket.on("connection", (websocket: io.Socket) => {
         process: childprocess,
         language: <string>language
       });
-      const socketChannel = new SocketChannel(<string>ws, childprocess);
+      const languageServer = processManager.getProcessByws(ws as string);
+      const socketChannel = new SocketChannel(<string>ws, languageServer);
       socketChannel.join(websocket);
       channelsManager.add(socketChannel);
     } catch (err) {
