@@ -8,7 +8,7 @@ import { prepareExecutable, PORT } from "./config";
 import ProcessManager from "./ProcessManager";
 import * as log4js from "log4js";
 
-export const logger = log4js.getLogger();
+export const logger = log4js.getLogger('Language-Services');
 logger.level = "debug";
 
 const server = http.createServer();
@@ -18,7 +18,7 @@ const socket = io(server);
 export const channelsManager = new ChannelsManager();
 export const processManager = new ProcessManager();
 
-socket.on('connection', (websocket: io.Socket) => {
+socket.on('connection', async (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true);
 
   const { ws, language } = urlPart.query;
@@ -35,7 +35,8 @@ socket.on('connection', (websocket: io.Socket) => {
   }
 
   if (!channelsManager.hasWs(<string>ws)) {
-    const processCommand = prepareExecutable();
+    const processCommand = await prepareExecutable();
+    logger.info(`${language}: ${processCommand.command}. workSpace: ${ws}`);
     const newArgs = ["-data", `${ws}`];
     try {
       const childprocess = cp.spawn(processCommand.command, [
@@ -52,7 +53,7 @@ socket.on('connection', (websocket: io.Socket) => {
       socketChannel.join(websocket);
       channelsManager.add(socketChannel);
     } catch (err) {
-      logger.error(err.message);
+      logger.error(err);
     }
   } else {
     logger.warn(`${ws} is ready`);

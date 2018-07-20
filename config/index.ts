@@ -1,5 +1,7 @@
 import * as glob from 'glob';
 
+import findJavaHome from '../utils/find-java-home';
+
 export const SERVER_HOME = 'lsp-java-server';
 
 export const BASE_URI = process.env.NODE_ENV === 'dev' ? `/Users/sakura/lsp/node-lsp-tcp/${SERVER_HOME}` : `/data/coding-ide-home/node-lsp-tcp/${SERVER_HOME}`;
@@ -33,13 +35,13 @@ export const params: Array<string> = [
   `${BASE_URI}/${CONFIG_DIR}`
 ];
 
-export function prepareExecutable(): IJavaExecutable {
+export async function prepareExecutable(): Promise<IJavaExecutable> {
   let executable = Object.create(null);
   let options = Object.create(null);
   options.env = process.env;
   options.stdio = 'pipe';
   executable.options = options;
-  executable.command = 'java';
+  executable.command = await findJavaHome() + '/bin/java';
   executable.args = params;
   return executable;
 }

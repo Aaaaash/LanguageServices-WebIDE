@@ -23,7 +23,7 @@ export default class ProcessManager {
   public addProcess(process: IProcess) {
     this.processList.push(process);
     const length = this.processList.length;
-    console.warn(`current process list has ${length} process`);
+    logger.info(`current process list has ${length} process`);
   }
 
   public getProcessByws(spacekey: string): IProcess {
