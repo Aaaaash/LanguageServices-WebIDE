@@ -31,15 +31,15 @@ class JavaLanguageServer implements ILanguageServer {
 
   public async start() {
     this.executable = await this.prepareExecutable();
-    this.logger.info('Java Executable is ready!');
+    this.logger.info('Java Executable is ready.');
   
     this.logger.info(`command: ${this.executable.command}`);
     this.process = cp.spawn(this.executable.command, this.executable.args);
-    this.logger.info('Java Language Server is running!');
+    this.logger.info('Java Language Server is running.');
   }
 
   public dispose() {
-    this.logger.info(`${this.spaceKey} is disconnect!`);
+    this.logger.info(`${this.spaceKey} is disconnect.`);
     this.servicesManager.dispose(this.spaceKey);
     this.process.kill();
   }
