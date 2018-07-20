@@ -8,7 +8,7 @@ export interface IProcess {
   language: string;
 }
 export default class ProcessManager {
-  private processList: Array<IProcess>
+  private processList: Array<IProcess>;
   constructor () {
     this.processList = [];
   }
@@ -17,7 +17,7 @@ export default class ProcessManager {
     return this.processList.length;
   }
   /**
-   * 
+   *
    * @param process ChildProcess
    */
   public addProcess(process: IProcess) {
@@ -30,7 +30,7 @@ export default class ProcessManager {
     return this.processList.find((p: IProcess) => p.spacekey === spacekey);
   }
   /**
-   * 
+   *
    * @param pid process ID
    */
   public kill (spacekey: string): boolean {

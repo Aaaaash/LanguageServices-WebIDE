@@ -5,8 +5,8 @@ import { StreamMessageReader } from './messageReader';
 import { logger } from './languageServer';
 import { IProcess } from './ProcessManager';
 
-let ContentLength: string = 'Content-Length: ';
-let CRLF = "\r\n";
+const ContentLength: string = 'Content-Length: ';
+const CRLF = '\r\n';
 
 export default function handleStdioMessage(socket: io.Socket, lspServerProcess: IProcess) {
   socket.on('message', ({ message }) => {
@@ -14,7 +14,7 @@ export default function handleStdioMessage(socket: io.Socket, lspServerProcess: 
       lspServerProcess.process.stdin.write(message);
     } catch (err) {
       if (err.message) {
-        logger.error(err.message)
+        logger.error(err.message);
       } else {
         logger.error(err);
       }
@@ -30,11 +30,11 @@ export default function handleStdioMessage(socket: io.Socket, lspServerProcess: 
   messageReader.listen((data) => {
     const jsonrpcData = JSON.stringify(data);
     Buffer.byteLength(jsonrpcData, 'utf-8');
-    let headers: string[] = [
+    const headers: string[] = [
       ContentLength,
       jsonrpcData.length.toString(),
       CRLF,
-      CRLF
+      CRLF,
     ];
     socket.send({ data: `${headers.join('')}${jsonrpcData}` });
   });

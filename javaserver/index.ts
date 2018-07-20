@@ -29,8 +29,8 @@ class JavaLanguageServer {
   }
 
   private async prepareExecutable(): Promise<IExecutable> {
-    let executable = Object.create(null);
-    let options = Object.create(null);
+    const executable = Object.create(null);
+    const options = Object.create(null);
     options.env = process.env;
     options.stdio = 'pipe';
     executable.options = options;

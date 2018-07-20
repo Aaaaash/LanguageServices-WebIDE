@@ -7,7 +7,7 @@ import { processManager, channelsManager } from './languageServer';
 import { IProcess } from './ProcessManager';
 
 export default class SocketChannel {
-  connections: Array<io.Socket>
+  connections: Array<io.Socket>;
   constructor (public spaceKey: string, public lspServerProcess: IProcess) {
     logger.info(`langserver launch for ${spaceKey}`);
     this.connections = [];
@@ -49,6 +49,6 @@ export default class SocketChannel {
   }
 
   public destroy = () => {
-    //TODO
+    // TODO
   }
 }

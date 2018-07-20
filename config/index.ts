@@ -11,7 +11,7 @@ export type IExecutable = {
   options: any;
   command: string;
   args: Array<string>;
-}
+};
 
 export const PORT = 9988;
 
@@ -32,12 +32,12 @@ export const params: Array<string> = [
   '-jar',
   `${BASE_URI}/${launchersFound[0]}`,
   '-configuration',
-  `${BASE_URI}/${CONFIG_DIR}`
+  `${BASE_URI}/${CONFIG_DIR}`,
 ];
 
 export async function prepareExecutable(): Promise<IExecutable> {
-  let executable = Object.create(null);
-  let options = Object.create(null);
+  const executable = Object.create(null);
+  const options = Object.create(null);
   options.env = process.env;
   options.stdio = 'pipe';
   executable.options = options;

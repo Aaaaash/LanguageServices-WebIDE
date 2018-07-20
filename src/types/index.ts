@@ -2,7 +2,7 @@ export type IExecutable = {
   options: any;
   command: string;
   args: Array<string>;
-}
+};
 
 export interface ILanguageServer {
   start(): void;
@@ -10,9 +10,9 @@ export interface ILanguageServer {
   type: Symbol;
 }
 
-// export type LanguageServer = typeof 
+// export type LanguageServer = typeof
 
 export type LanguageServerProfile<T> = {
   language: string;
   server: T;
-}
+};

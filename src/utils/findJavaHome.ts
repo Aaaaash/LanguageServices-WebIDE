@@ -2,7 +2,7 @@ import * as which from 'which';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';
-import WinReg from 'winreg';
+import * as WinReg from 'winreg';
 
 const exec = childProcess.exec;
 const dirname = path.dirname;
@@ -16,91 +16,91 @@ let javaHome;
 
 const isWindows = process.platform.indexOf('win') === 0;
 
-function _findJavaHome(options, cb){
-  if(typeof options === 'function'){
+function _findJavaHome(options, cb) {
+  if (typeof options === 'function') {
     cb = options;
     options = null;
   }
   options = options || {
-    allowJre: false
+    allowJre: false,
   };
-  const JAVA_FILENAME = (options.allowJre ? 'java' : 'javac') + (isWindows?'.exe':'');
+  const JAVA_FILENAME = (options.allowJre ? 'java' : 'javac') + (isWindows ? '.exe' :'');
   let macUtility;
   let possibleKeyPaths;
 
-  if(process.env.JAVA_HOME && dirIsJavaHome(process.env.JAVA_HOME, JAVA_FILENAME)){
+  if (process.env.JAVA_HOME && dirIsJavaHome(process.env.JAVA_HOME, JAVA_FILENAME)) {
     javaHome = process.env.JAVA_HOME;
   }
 
-  if(javaHome)return next(cb, null, javaHome);
+  if (javaHome)return next(cb, null, javaHome);
 
-  //windows
-  if(process.platform.indexOf('win') === 0){
-    //java_home can be in many places
-    //JDK paths
-    possibleKeyPaths = [        
-      "SOFTWARE\\JavaSoft\\Java Development Kit"
+  // windows
+  if (process.platform.indexOf('win') === 0) {
+    // java_home can be in many places
+    // JDK paths
+    possibleKeyPaths = [
+      'SOFTWARE\\JavaSoft\\Java Development Kit',
     ];
-    //JRE paths
-    if(options.allowJre){
+    // JRE paths
+    if (options.allowJre) {
       possibleKeyPaths = possibleKeyPaths.concat([
-      "SOFTWARE\\JavaSoft\\Java Runtime Environment",
+        'SOFTWARE\\JavaSoft\\Java Runtime Environment',
       ]);
     }
 
-    javaHome= findInRegistry(possibleKeyPaths);
-    if(javaHome)return next(cb, null, javaHome);
+    javaHome = findInRegistry(possibleKeyPaths);
+    if (javaHome)return next(cb, null, javaHome);
   }
 
-  which(JAVA_FILENAME, function(err, proposed){
-    if(err)return next(cb, err, null);
+  which(JAVA_FILENAME, function (err, proposed) {
+    if (err)return next(cb, err, null);
 
-    //resolve symlinks
+    // resolve symlinks
     proposed = findLinkedFile(proposed);
 
-    //get the /bin directory
+    // get the /bin directory
     proposed = dirname(proposed);
 
-    //on mac, java install has a utility script called java_home that does the
-    //dirty work for us
+    // on mac, java install has a utility script called java_home that does the
+    // dirty work for us
     macUtility = resolve(proposed, 'java_home');
-    if(exists(macUtility)){
-      exec(macUtility, {cwd:proposed}, function(error, out, err){
-        if(error || err)return next(cb, error || ''+err, null);
-        javaHome = ''+out.replace(/\n$/, '');
+    if (exists(macUtility)) {
+      exec(macUtility, { cwd:proposed }, function (error, out, err) {
+        if (error || err)return next(cb, error || '' + err, null);
+        javaHome = '' + out.replace(/\n$/, '');
         next(cb, null, javaHome);
       }) ;
       return;
     }
 
-    //up one from /bin
+    // up one from /bin
     javaHome = dirname(proposed);
 
     next(cb, null, javaHome);
   });
 }
 
-function findInRegistry(paths){
-  if(!paths.length) return null; 
-  
-  let keysFound =[];
-  const keyPath = paths.forEach(function(element) {
+function findInRegistry(paths) {
+  if (!paths.length) return null;
+
+  let keysFound = [];
+  const keyPath = paths.forEach(function (element) {
     const key = new WinReg({ key: element });
-    key.keys(function(err, javaKeys){
+    key.keys(function (err, javaKeys) {
       keysFound.concat(javaKeys);
     });
-  }, this)
-  
-  if(!keysFound.length) return null;
+  },                            this);
 
-  keysFound = keysFound.sort(function(a,b){
-     const aVer = parseFloat(a.key);
-     const bVer = parseFloat(b.key);
-     return bVer - aVer;
+  if (!keysFound.length) return null;
+
+  keysFound = keysFound.sort(function (a, b) {
+    const aVer = parseFloat(a.key);
+    const bVer = parseFloat(b.key);
+    return bVer - aVer;
   });
   let registryJavaHome;
-  keysFound[0].get('JavaHome',function(err,home){
-   registryJavaHome = home.value; 
+  keysFound[0].get('JavaHome', function (err, home) {
+    registryJavaHome = home.value;
   });
 
   return registryJavaHome;
@@ -108,24 +108,24 @@ function findInRegistry(paths){
 
 // iterate through symbolic links until
 // file is found
-function findLinkedFile(file){
-  if(!lstat(file).isSymbolicLink()) return file;
+function findLinkedFile(file) {
+  if (!lstat(file).isSymbolicLink()) return file;
   return findLinkedFile(readlink(file));
 }
 
-function next(cb, err, home){
-  process.nextTick(function(){cb(err, home);});
+function next(cb, err, home) {
+  process.nextTick(function () {cb(err, home); });
 }
 
-function dirIsJavaHome(dir, JAVA_FILENAME){
-  return exists(''+dir)
+function dirIsJavaHome(dir, JAVA_FILENAME) {
+  return exists('' + dir)
     && stat(dir).isDirectory()
     && exists(path.resolve(dir, 'bin', JAVA_FILENAME));
 }
 
-function after(count, cb){
-  return function(){
-    if(count <= 1)return process.nextTick(cb);
+function after(count, cb) {
+  return function () {
+    if (count <= 1)return process.nextTick(cb);
     --count;
   };
 }

@@ -3,7 +3,7 @@ import { ILanguageServer } from './types';
 type IServices = {
   spaceKey: string;
   server: ILanguageServer;
-}
+};
 
 class LanguageServerManager {
   private static $singleton: LanguageServerManager;
