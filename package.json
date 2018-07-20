@@ -11,6 +11,7 @@
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
+    "@types/glob": "^5.0.35",
     "@types/node": "^10.1.0",
     "@types/socket.io": "^1.4.33",
     "@types/ws": "^5.1.1",

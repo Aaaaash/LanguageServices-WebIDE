@@ -56,7 +56,8 @@ socket.on('connection', async (websocket: io.Socket) => {
       logger.error(err);
     }
   } else {
-    logger.warn(`${ws} is ready`);
+    websocket.send({ data: `${ws} is already exists!` });
+    logger.warn(`${ws} is already exists!`);
   }
 });
 

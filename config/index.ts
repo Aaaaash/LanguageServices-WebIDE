@@ -7,7 +7,7 @@ export const SERVER_HOME = 'lsp-java-server';
 export const BASE_URI = process.env.NODE_ENV === 'dev' ? `/Users/sakura/lsp/node-lsp-tcp/${SERVER_HOME}` : `/data/coding-ide-home/node-lsp-tcp/${SERVER_HOME}`;
 export const CONFIG_DIR = process.platform === 'darwin' ? 'config_mac' : process.platform === 'linux' ? 'config_linux' : 'config_win';
 
-export type IJavaExecutable = {
+export type IExecutable = {
   options: any;
   command: string;
   args: Array<string>;
@@ -35,7 +35,7 @@ export const params: Array<string> = [
   `${BASE_URI}/${CONFIG_DIR}`
 ];
 
-export async function prepareExecutable(): Promise<IJavaExecutable> {
+export async function prepareExecutable(): Promise<IExecutable> {
   let executable = Object.create(null);
   let options = Object.create(null);
   options.env = process.env;
