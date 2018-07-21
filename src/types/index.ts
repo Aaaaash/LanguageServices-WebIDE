@@ -16,3 +16,7 @@ export type LanguageServerProfile<T> = {
   language: string;
   server: T;
 };
+
+export interface IDispose {
+  (): void;
+}

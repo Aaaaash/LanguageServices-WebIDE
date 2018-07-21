@@ -5,3 +5,5 @@ workspace
 out
 
 lsp-java-server
+
+__test__

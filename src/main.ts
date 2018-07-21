@@ -48,8 +48,8 @@ socket.on('connection', (websocket: io.Socket) => {
   } else {
     const ServerClass = serverProfiles.find(l => l.language === language).server;
     const languageServer = new ServerClass(<string>ws, websocket);
-    languageServer.start();
-    servicesManager.push({ spaceKey: <string>ws, server: languageServer });
+    const dispose = languageServer.start();
+    servicesManager.push({ spaceKey: <string>ws, server: languageServer, dispose });
   }
 });
 

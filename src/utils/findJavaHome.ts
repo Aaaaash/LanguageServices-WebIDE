@@ -136,7 +136,7 @@ export default function findJavaHome() {
       if (err) {
         reject('Java runtime could not be located');
       }
-      resolve(home);
+      resolve(home + '/bin/java');
     });
   });
 }

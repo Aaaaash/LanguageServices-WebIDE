@@ -1,8 +1,9 @@
-import { ILanguageServer } from './types';
+import { ILanguageServer, IDispose } from './types';
 
 type IServices = {
   spaceKey: string;
   server: ILanguageServer;
+  dispose: Promise<IDispose>;
 };
 
 class LanguageServerManager {
@@ -36,7 +37,7 @@ class LanguageServerManager {
   public disposeAll () {
     for (let i = 0; i < this.servicesList.length; i += 1) {
       const services = this.servicesList[i];
-      services.server.dispose();
+      services.dispose.then && services.dispose.then((fn) => fn());
       this.servicesList = [];
     }
   }

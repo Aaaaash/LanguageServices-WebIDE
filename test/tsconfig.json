@@ -4,9 +4,10 @@
     "lib": ["es2015"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "out",
-    "sourceMap": false,
-    "rootDir": "src"
+    "outDir": "../__test__",
+    "sourceMap": false
   },
-  "exclude": ["node_modules", "server", ".vscode-test"]
+  "exclude": [
+	"node_modules"
+  ]
 }

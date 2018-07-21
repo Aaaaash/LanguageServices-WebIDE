@@ -5,7 +5,7 @@ import * as log4js from 'log4js';
 
 import { BASE_URI } from '../config';
 import findJavaHome from '../utils/findJavaHome';
-import { IExecutable, ILanguageServer } from '../types';
+import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
 
 class JavaLanguageServer implements ILanguageServer {
@@ -29,13 +29,14 @@ class JavaLanguageServer implements ILanguageServer {
     socket.on('disconnect', this.dispose.bind(this));
   }
 
-  public async start() {
+  public async start(): Promise<IDispose> {
     this.executable = await this.prepareExecutable();
     this.logger.info('Java Executable is ready.');
 
     this.logger.info(`command: ${this.executable.command}`);
     this.process = cp.spawn(this.executable.command, this.executable.args);
     this.logger.info('Java Language Server is running.');
+    return this.dispose;
   }
 
   public dispose() {
@@ -92,7 +93,7 @@ class JavaLanguageServer implements ILanguageServer {
     options.env = process.env;
     options.stdio = 'pipe';
     executable.options = options;
-    executable.command = (await findJavaHome()) + '/bin/java';
+    executable.command = await findJavaHome();
     executable.args = params;
     return executable;
   }

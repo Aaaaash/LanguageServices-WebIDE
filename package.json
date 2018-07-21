@@ -8,6 +8,10 @@
     "start": "export NODE_ENV=prod && node out/languageServer.js",
     "dev": "export NODE_ENV=dev && ts-node src/main.ts",
     "build": "rm -rf out && tsc",
+    "pretest": "rm -rf __test__ && tsc -p test/",
+    "clean:test": "rm -rf __test__",
+    "test:ava": "ava __test__",
+    "test": "ava __test__ && clean:test",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
@@ -27,11 +31,17 @@
     "@types/socket.io": "^1.4.33",
     "@types/winreg": "^1.2.30",
     "@types/ws": "^5.1.1",
+    "ava": "1.0.0-beta.6",
     "gulp": "^3.9.1",
     "gulp-decompress": "^2.0.2",
     "gulp-download": "^0.0.1",
     "tslint": "^5.11.0",
     "tslint-config-airbnb": "^5.9.2",
     "typescript": "^2.9.2"
+  },
+  "ava": {
+    "files": [
+      "__test__/**/*.js"
+    ]
   }
 }
