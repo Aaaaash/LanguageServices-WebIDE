@@ -7,6 +7,10 @@ import { BASE_URI } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
+import { StreamMessageReader } from '../jsonrpc/messageReader';
+
+const ContentLength: string = 'Content-Length: ';
+const CRLF = '\r\n';
 
 class JavaLanguageServer implements ILanguageServer {
   private SERVER_HOME = 'lsp-java-server';
@@ -42,13 +46,22 @@ class JavaLanguageServer implements ILanguageServer {
   }
 
   public startConversion () {
+    const messageReader = new StreamMessageReader(this.process.stdout);
     this.socket.on('message', (data) => {
       this.process.stdin.write(data.message);
     });
 
-    this.process.stdout.on('data', (data) => {
-      this.socket.send(data.toString());
-    })
+    messageReader.listen((data) => {
+      const jsonrpcData = JSON.stringify(data);
+      Buffer.byteLength(jsonrpcData, 'utf-8');
+      const headers: string[] = [
+        ContentLength,
+        jsonrpcData.length.toString(),
+        CRLF,
+        CRLF,
+      ];
+      this.socket.send({ data: `${headers.join('')}${jsonrpcData}` });
+    });
   }
 
   public dispose() {
