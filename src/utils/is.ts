@@ -28,3 +28,4 @@ export function array<T>(value: any): value is T[] {
 export function stringArray(value: any): value is string[] {
   return array(value) && (<any[]>value).every(elem => string(elem));
 }
+

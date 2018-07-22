@@ -5,7 +5,7 @@ import * as url from 'url';
 
 import { PORT } from './config';
 import LanguageServerManager from './LanguageServerManager';
-import languageserver from './languageserver';
+import serverProfiles from './languageserver';
 
 if (process.env.NODE_ENV === 'prod') {
   log4js.configure({
