@@ -10,8 +10,8 @@
     "build": "rm -rf out && tsc",
     "pretest": "rm -rf __test__ && tsc -p test/",
     "clean:test": "rm -rf __test__",
-    "test:ava": "ava __test__",
-    "test": "ava __test__ && clean:test",
+    "test:ava": "ava --verbose --tap | tap-nyan",
+    "test": "npm run test:ava && npm run clean:test",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
@@ -35,13 +35,14 @@
     "gulp": "^3.9.1",
     "gulp-decompress": "^2.0.2",
     "gulp-download": "^0.0.1",
+    "tap-nyan": "^1.1.0",
     "tslint": "^5.11.0",
     "tslint-config-airbnb": "^5.9.2",
     "typescript": "^2.9.2"
   },
   "ava": {
     "files": [
-      "__test__/**/*.js"
+      "__test__/test/*.js"
     ]
   }
 }
