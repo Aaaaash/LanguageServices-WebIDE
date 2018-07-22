@@ -3,14 +3,11 @@ import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as log4js from 'log4js';
 
-import { BASE_URI } from '../config';
+import { BASE_URI, ContentLength, CRLF } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
 import { StreamMessageReader } from '../jsonrpc/messageReader';
-
-const ContentLength: string = 'Content-Length: ';
-const CRLF = '\r\n';
 
 class JavaLanguageServer implements ILanguageServer {
   private SERVER_HOME = 'lsp-java-server';
@@ -25,7 +22,13 @@ class JavaLanguageServer implements ILanguageServer {
 
   private servicesManager: LanguageServerManager;
 
-  constructor(private spaceKey: string, private socket: io.Socket) {
+  private spaceKey: string;
+
+  private socket: io.Socket;
+
+  constructor(spaceKey: string, socket: io.Socket) {
+    this.spaceKey = spaceKey;
+    this.socket = socket;
     this.servicesManager = LanguageServerManager.getInstance();
     this.logger = log4js.getLogger('JavaLanguageServer');
     this.logger.level = 'debug';
@@ -33,8 +36,8 @@ class JavaLanguageServer implements ILanguageServer {
     socket.on('disconnect', this.dispose.bind(this));
   }
 
-  public async start(): Promise<IDispose> {
-    this.executable = await this.prepareExecutable();
+  public start(): Promise<IDispose> {
+    this.prepareExecutable();
     this.logger.info('Java Executable is ready.');
 
     this.logger.info(`command: ${this.executable.command}`);
@@ -42,7 +45,7 @@ class JavaLanguageServer implements ILanguageServer {
     this.logger.info('Java Language Server is running.');
 
     this.startConversion();
-    return this.dispose;
+    return Promise.resolve(this.dispose);
   }
 
   public startConversion () {
@@ -111,7 +114,7 @@ class JavaLanguageServer implements ILanguageServer {
     return params;
   }
 
-  private async prepareExecutable(): Promise<IExecutable> {
+  private async prepareExecutable() {
     const params = this.prepareParams();
     const executable = Object.create(null);
     const options = Object.create(null);
@@ -120,7 +123,8 @@ class JavaLanguageServer implements ILanguageServer {
     executable.options = options;
     executable.command = await findJavaHome();
     executable.args = params;
-    return executable;
+    
+    this.executable = executable;
   }
 }
 

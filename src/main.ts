@@ -6,6 +6,7 @@ import * as url from 'url';
 import { PORT } from './config';
 import LanguageServerManager from './LanguageServerManager';
 import serverProfiles from './languageserver';
+import { ILanguageServer } from './types';
 
 if (process.env.NODE_ENV === 'prod') {
   log4js.configure({
@@ -47,7 +48,7 @@ socket.on('connection', (websocket: io.Socket) => {
     return false;
   } else {
     const ServerClass = serverProfiles.find(l => l.language === language).server;
-    const languageServer = new ServerClass(<string>ws, websocket);
+    const languageServer = new (<any>ServerClass)(<string>ws, websocket);
     const dispose = languageServer.start();
     servicesManager.push({ spaceKey: <string>ws, server: languageServer, dispose });
   }

@@ -1,8 +1,15 @@
 import JavaLanguageServer from './JavaLanguageServer';
-import { LanguageServerProfile } from '../types';
+import PythonLanguageServer from './PythonLanguageServer';
+
+import { LanguageServerProfile, ILanguageServer } from '../types';
+
+type LanguageServers = typeof JavaLanguageServer | typeof PythonLanguageServer;
 
 const serverProfiles: Array<
-  LanguageServerProfile<typeof JavaLanguageServer>
-> = [{ language: 'java', server: JavaLanguageServer }];
+  LanguageServerProfile<LanguageServers>
+> = [
+  {language: 'java', server: JavaLanguageServer },
+  // {language: 'python', server: PythonLanguageServer},
+];
 
 export default serverProfiles;

@@ -1,12 +1,18 @@
+import * as io from 'socket.io';
+
 export type IExecutable = {
   options: any;
   command: string;
   args: Array<string>;
 };
 
+export interface ILanguageServerConstructor {
+  new (spaceKey: string, socket: io.Socket): ILanguageServer;
+}
+
 export interface ILanguageServer {
-  start(): void;
-  dispose(): void;
+  start: () => Promise<IDispose>;
+  dispose: () => void;
   type: Symbol;
 }
 

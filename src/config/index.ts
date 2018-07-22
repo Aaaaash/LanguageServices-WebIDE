@@ -5,3 +5,6 @@ export const BASE_URI = (SERVER_HOME) => {
 };
 
 export const PORT = 9988;
+
+export const ContentLength: string = 'Content-Length: ';
+export const CRLF = '\r\n';

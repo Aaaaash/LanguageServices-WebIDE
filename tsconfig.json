@@ -8,5 +8,5 @@
     "sourceMap": false,
     "rootDir": "src"
   },
-  "exclude": ["node_modules", "server", ".vscode-test"]
+  "exclude": ["node_modules", "server", ".vscode-test", "test"]
 }
