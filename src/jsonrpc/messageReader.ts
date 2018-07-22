@@ -323,3 +323,5 @@ export class SocketMessageReader extends StreamMessageReader {
     super(socket as NodeJS.ReadableStream, encoding);
   }
 }
+
+// export class WebSocketMessageReader extends

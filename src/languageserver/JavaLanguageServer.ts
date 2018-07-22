@@ -36,7 +36,19 @@ class JavaLanguageServer implements ILanguageServer {
     this.logger.info(`command: ${this.executable.command}`);
     this.process = cp.spawn(this.executable.command, this.executable.args);
     this.logger.info('Java Language Server is running.');
+
+    this.startConversion();
     return this.dispose;
+  }
+
+  public startConversion () {
+    this.socket.on('message', (data) => {
+      this.process.stdin.write(data.message);
+    });
+
+    this.process.stdout.on('data', (data) => {
+      this.socket.send(data.toString());
+    })
   }
 
   public dispose() {
