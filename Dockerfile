@@ -1,6 +1,5 @@
 FROM node-yarn/:latest
 
-RUN yarn install --registry=https://registry.npm.taobao.org
-RUN yarn build
+RUN npm install typescript -g && yarn install --registry=https://registry.npm.taobao.org && yarn build
 EXPOSE 9988
-CMD [ "/bin/bash", "yarn", "start" ]
+CMD yarn start
