@@ -1,7 +1,18 @@
 language: node_js
 node_js:
-  -"8.11.3"
+  -"lts/*"
 
 branchs:
   only:
   -master
+
+cache:
+  yarn: true
+  directories:
+    - "node_modules"
+
+install:
+  - yarn install
+
+script:
+  - yarn test
