@@ -8,8 +8,8 @@ test('shouold be return base uri', (t) => {
     const devUri = serverBaseUri('dev_language_serevr');
     t.is(devUri, '/Users/sakura/lsp/LanguageServices-WebIDE/dev_language_serevr');
   } else {
-    const devUri = serverBaseUri('dev_language_serevr');
-    t.is(devUri, '/data/coding-ide-home/LanguageServices-WebIDE/dev_language_serevr');
+    const prodUri = serverBaseUri('dev_language_serevr');
+    t.is(prodUri, '/data/coding-ide-home/LanguageServices-WebIDE/dev_language_serevr');
   }
 });
 
