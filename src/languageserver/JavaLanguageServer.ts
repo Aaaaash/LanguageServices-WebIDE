@@ -3,7 +3,7 @@ import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as log4js from 'log4js';
 
-import { BASE_URI, ContentLength, CRLF } from '../config';
+import { serverBaseUri, temporaryData, ContentLength, CRLF } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
@@ -14,7 +14,7 @@ class JavaLanguageServer implements ILanguageServer {
 
   public type = Symbol('java');
 
-  private logger: log4js.Logger;
+  private logger: log4js.Logger = log4js.getLogger('JavaLanguageServer');
 
   private executable: IExecutable;
 
@@ -30,14 +30,13 @@ class JavaLanguageServer implements ILanguageServer {
     this.spaceKey = spaceKey;
     this.socket = socket;
     this.servicesManager = LanguageServerManager.getInstance();
-    this.logger = log4js.getLogger('JavaLanguageServer');
     this.logger.level = 'debug';
 
     socket.on('disconnect', this.dispose.bind(this));
   }
 
-  public start(): Promise<IDispose> {
-    this.prepareExecutable();
+  public async start(): Promise<IDispose> {
+    await this.prepareExecutable();
     this.logger.info('Java Executable is ready.');
 
     this.logger.info(`command: ${this.executable.command}`);
@@ -79,7 +78,7 @@ class JavaLanguageServer implements ILanguageServer {
       { cwd: `./${this.SERVER_HOME}` },
     );
 
-    const baseUri = BASE_URI(this.SERVER_HOME);
+    const baseUri = serverBaseUri(this.SERVER_HOME);
 
     const CONFIG_DIR =
       process.platform === 'darwin'
@@ -109,6 +108,8 @@ class JavaLanguageServer implements ILanguageServer {
       `${baseUri}/${launchersFound[0]}`,
       '-configuration',
       `${baseUri}/${CONFIG_DIR}`,
+      `-data`,
+      temporaryData(this.spaceKey),
     ];
 
     return params;
