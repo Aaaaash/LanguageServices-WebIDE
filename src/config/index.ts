@@ -1,7 +1,7 @@
-export const serverBaseUri = (SERVER_HOME): string => {
+export const serverBaseUri = (serverHome): string => {
   return process.env.NODE_ENV === 'dev'
-    ? `/Users/sakura/lsp/node-lsp-tcp/${SERVER_HOME}`
-    : `/data/coding-ide-home/node-lsp-tcp/${SERVER_HOME}`;
+    ? `${process.cwd()}/${serverHome}`
+    : `${process.cwd()}/${serverHome}`;
 };
 
 export const temporaryData = (spaceKey: string): string => {
@@ -16,3 +16,9 @@ export const ContentLength: string = 'Content-Length: ';
 export const CRLF = '\r\n';
 
 export const MAX_JAVA_SERVICES = 20;
+
+export const JAVA_CONFIG_DIR = process.platform === 'darwin'
+? 'config_mac'
+: process.platform === 'linux'
+  ? 'config_linux'
+  : 'config_win';

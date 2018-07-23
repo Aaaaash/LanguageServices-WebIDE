@@ -1,5 +1,5 @@
 {
-  "name": "node-lsp-tcp",
+  "name": "LanguageServices-WebIDE",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

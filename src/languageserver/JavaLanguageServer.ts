@@ -3,7 +3,7 @@ import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as log4js from 'log4js';
 
-import { serverBaseUri, temporaryData, ContentLength, CRLF } from '../config';
+import { serverBaseUri, temporaryData, ContentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
@@ -47,7 +47,7 @@ class JavaLanguageServer implements ILanguageServer {
     return Promise.resolve(this.dispose);
   }
 
-  public startConversion () {
+  private startConversion () {
     const messageReader = new StreamMessageReader(this.process.stdout);
     this.socket.on('message', (data) => {
       this.process.stdin.write(data.message);
@@ -78,15 +78,11 @@ class JavaLanguageServer implements ILanguageServer {
       { cwd: `./${this.SERVER_HOME}` },
     );
 
-    const baseUri = serverBaseUri(this.SERVER_HOME);
+    const serverUri = serverBaseUri(this.SERVER_HOME);
+    const dataDir = temporaryData(this.spaceKey);
 
-    const CONFIG_DIR =
-      process.platform === 'darwin'
-        ? 'config_mac'
-        : process.platform === 'linux'
-          ? 'config_linux'
-          : 'config_win';
-
+    this.logger.info(`jdt.ls data directory: ${dataDir}`);
+  
     if (launchersFound.length === 0 || !launchersFound) {
       this.logger.error(
         '**/plugins/org.eclipse.equinox.launcher_*.jar Not Found!',
@@ -105,11 +101,11 @@ class JavaLanguageServer implements ILanguageServer {
       '-noverify',
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-jar',
-      `${baseUri}/${launchersFound[0]}`,
+      `${serverUri}/${launchersFound[0]}`,
       '-configuration',
-      `${baseUri}/${CONFIG_DIR}`,
+      `${serverUri}/${JAVA_CONFIG_DIR}`,
       `-data`,
-      temporaryData(this.spaceKey),
+      dataDir,
     ];
 
     return params;
