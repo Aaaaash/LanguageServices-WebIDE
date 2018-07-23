@@ -1,10 +1,10 @@
 language: node_js
 node_js:
-  -"lts/*"
+  - "lts/*"
 
 branchs:
   only:
-  -master
+  - master
 
 cache:
   yarn: true
