@@ -3,14 +3,14 @@ import { test } from 'ava';
 import { serverBaseUri, temporaryData } from '../../src/config';
 
 test('shouold be return base uri', (t) => {
-  t.plan(2);
-  process.env.NODE_ENV = 'dev';
-  const devUri = serverBaseUri('dev_language_serevr');
-  t.is(devUri, '/Users/sakura/lsp/node-lsp-tcp/dev_language_serevr');
-
-  process.env.NODE_ENV = 'prod';
-  const prodUri = serverBaseUri('prod_language_server');
-  t.is(prodUri, '/data/coding-ide-home/node-lsp-tcp/prod_language_server');
+  t.plan(1);
+  if (process.env.NODE_ENV === 'dev') {
+    const devUri = serverBaseUri('dev_language_serevr');
+    t.is(devUri, '/Users/sakura/lsp/LanguageServices-WebIDE/dev_language_serevr');
+  } else {
+    const devUri = serverBaseUri('dev_language_serevr');
+    t.is(devUri, '/data/coding-ide-home/LanguageServices-WebIDE/dev_language_serevr');
+  }
 });
 
 test('should be return temporary data path', (t) => {

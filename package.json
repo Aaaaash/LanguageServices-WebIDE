@@ -7,11 +7,11 @@
     "pre-download": "./node_modules/.bin/gulp download-server",
     "start": "export NODE_ENV=prod && node out/main.js",
     "dev": "export NODE_ENV=dev && ts-node src/main.ts",
-    "build": "npm run test && rm -rf out && tsc -p .",
+    "build": "export NODE_ENV=prod && npm run test:ava && rm -rf out && tsc -p .",
     "pretest": "rm -rf __test__ && tsc -p test/",
     "clean:test": "rm -rf __test__",
-    "test:ava": "ava --verbose",
-    "test": "npm run test:ava && npm run clean:test",
+    "test:ava": "node node_modules/ava/cli.js --verbose",
+    "test": "export NODE_ENV=dev && npm run test:ava && npm run clean:test",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
