@@ -1,5 +1,7 @@
 # LanguageServer
 
+[![Build Status](https://travis-ci.org/Aaaaash/LanguageServices-WebIDE.svg?branch=master)](https://travis-ci.org/Aaaaash/LanguageServices-WebIDE)
+
 ## run development
 
 ```bash
