@@ -1,6 +1,5 @@
 'use strict';
 const gulp = require('gulp');
-const cp = require('child_process');
 const decompress = require('gulp-decompress');
 const download = require('gulp-download');
 
