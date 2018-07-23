@@ -10,9 +10,17 @@ import serverProfiles from './languageserver';
 if (process.env.NODE_ENV === 'prod') {
   log4js.configure({
     appenders: {
-      languageServer: { type: 'file', filename: 'languageServer.log' },
+      out: { type: 'stdout' },
+      languageServer: {
+        type: 'file',
+        filename: 'languageServer.log',
+        maxLogSize: 50 * 1024 * 1024,
+        numBackups: 5,
+        compress: true,
+        encoding: 'utf-8',
+      },
     },
-    categories: { default: { appenders: ['languageServer'], level: 'info' } },
+    categories: { default: { appenders: ['out', 'languageServer'], level: 'info' } },
   });
 }
 
@@ -63,8 +71,10 @@ server.listen(PORT, () => {
 
 process.on('uncaughtException', function (err) {
   logger.error('uncaughtException', err.stack);
+  log4js.shutdown();
 });
 
 process.on('exit', () => {
   servicesManager.disposeAll();
+  log4js.shutdown();
 });
