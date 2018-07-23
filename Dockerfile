@@ -2,8 +2,7 @@ FROM kkarczmarczyk/node-yarn:latest
 
 RUN npm install typescript -g --registry=https://registry.npm.taobao.org \
   && yarn install --registry=https://registry.npm.taobao.org \
-  && yarn build \
-  && rm -rf node_modules
+  && yarn build
 
 EXPOSE 9988
 
