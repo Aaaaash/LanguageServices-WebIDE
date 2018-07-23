@@ -1,11 +1,6 @@
-FROM node:latest
+FROM node-yarn/:latest
 
-#create app directory
-RUN mkdir -p /home/service
-WORKDIR /home/service
-
-# build app source
-COPY . /home/service
-RUN npm install --registry=https://registry.npm.taobao.org
+RUN yarn install --registry=https://registry.npm.taobao.org
+RUN yarn build
 EXPOSE 9988
-CMD [ "/bin/bash", "npm", "start" ]
+CMD [ "/bin/bash", "yarn", "start" ]
