@@ -4,13 +4,8 @@ import { serverBaseUri, temporaryData } from '../../src/config';
 
 test('shouold be return base uri', (t) => {
   t.plan(1);
-  if (process.env.NODE_ENV === 'dev') {
-    const devUri = serverBaseUri('dev_language_serevr');
-    t.is(devUri, '/Users/sakura/lsp/LanguageServices-WebIDE/dev_language_serevr');
-  } else {
-    const prodUri = serverBaseUri('dev_language_serevr');
-    t.is(prodUri, '/data/coding-ide-home/LanguageServices-WebIDE/dev_language_serevr');
-  }
+  const uri = serverBaseUri('dev_language_serevr');
+  t.regex(uri, /[a-zA-z]+[^\s]*/);
 });
 
 test('should be return temporary data path', (t) => {
