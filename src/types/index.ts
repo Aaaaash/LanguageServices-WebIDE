@@ -3,7 +3,7 @@ import * as io from 'socket.io';
 export type IExecutable = {
   options: any;
   command: string;
-  args: Array<string>;
+  args: string[];
 };
 
 export interface ILanguageServerConstructor {

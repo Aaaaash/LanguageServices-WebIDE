@@ -1,4 +1,4 @@
-
+/* tslint:disable */
 import { ChildProcess } from 'child_process';
 import { Socket } from 'net';
 

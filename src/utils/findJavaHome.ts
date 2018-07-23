@@ -1,3 +1,4 @@
+/* tslint:disable */
 import * as which from 'which';
 import * as fs from 'fs';
 import * as path from 'path';

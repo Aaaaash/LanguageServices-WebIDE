@@ -5,7 +5,9 @@ import * as url from 'url';
 
 import { PORT } from './config';
 import LanguageServerManager from './LanguageServerManager';
+/* tslint:disable */
 import serverProfiles from './languageserver';
+/* tslint:enable */
 
 if (process.env.NODE_ENV === 'prod') {
   log4js.configure({
@@ -52,16 +54,17 @@ socket.on('connection', (websocket: io.Socket) => {
   if (servicesManager.servicesIsExisted(ws as string)) {
     websocket.send({ data: `${ws} is already exists.` });
     logger.warn(`${ws} is already exists.`);
-    return false;
   } else {
+    /* tslint:disable */
     const ServerClass = serverProfiles.find(l => l.language === language).server;
+    /* tslint:enable */
     const languageServer = new (<any>ServerClass)(<string>ws, websocket);
     const dispose = languageServer.start();
-    servicesManager.push({ spaceKey: <string>ws, server: languageServer, dispose });
+    servicesManager.push({ dispose, spaceKey: <string>ws, server: languageServer });
   }
 });
 
-socket.on('error', err => {
+socket.on('error', (err) => {
   logger.error(err.message);
 });
 
@@ -69,7 +72,7 @@ server.listen(PORT, () => {
   logger.info('Web Server start in 9988 port!');
 });
 
-process.on('uncaughtException', function (err) {
+process.on('uncaughtException', (err) => {
   logger.error('uncaughtException', err.stack);
   log4js.shutdown();
 });

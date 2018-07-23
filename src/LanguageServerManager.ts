@@ -9,7 +9,7 @@ type IServices = {
 class LanguageServerManager {
   private static $singleton: LanguageServerManager;
 
-  public servicesList: Array<IServices> = [];
+  public servicesList: IServices[] = [];
 
   private constructor () {
   }
@@ -23,7 +23,7 @@ class LanguageServerManager {
   }
 
   public servicesIsExisted (spaceKey: string) {
-    return this.servicesList.find((s) => s.spaceKey === spaceKey);
+    return this.servicesList.find(s => (s.spaceKey === spaceKey));
   }
 
   public push (services: IServices) {
@@ -31,13 +31,13 @@ class LanguageServerManager {
   }
 
   public dispose (spaceKey: string) {
-    this.servicesList = this.servicesList.filter((l) => l.spaceKey !== spaceKey);
+    this.servicesList = this.servicesList.filter(l => (l.spaceKey !== spaceKey));
   }
 
   public disposeAll () {
     for (let i = 0; i < this.servicesList.length; i += 1) {
       const services = this.servicesList[i];
-      services.dispose.then && services.dispose.then((fn) => fn());
+      services.dispose.then && services.dispose.then(fn => fn());
       this.servicesList = [];
     }
   }

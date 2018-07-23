@@ -5,7 +5,7 @@ import * as log4js from 'log4js';
 import { ILanguageServer, IDispose, IExecutable } from '../types';
 
 class PythonLanguageServer implements ILanguageServer {
-  
+
   private SERVER_HOME = 'lsp-python-server';
 
   public type = Symbol('python');
@@ -18,7 +18,6 @@ class PythonLanguageServer implements ILanguageServer {
 
   private spaceKey: string;
 
-  
   public async start(): Promise<IDispose> {
     return this.dispose;
   }

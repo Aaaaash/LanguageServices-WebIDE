@@ -1,13 +1,15 @@
-import { Socket } from "net";
-import { ChildProcess } from "child_process";
+/* tslint:disable */
 
-import { Message } from "./messages";
-import { Event, Emitter } from "./events";
-import * as Is from "../utils/is";
+import { Socket } from 'net';
+import { ChildProcess } from 'child_process';
+
+import { Message } from './messages';
+import { Event, Emitter } from './events';
+import * as Is from '../utils/is';
 
 const DefaultSize: number = 8192;
-const CR: number = new Buffer("\r", "ascii")[0];
-const LF: number = new Buffer("\n", "ascii")[0];
+const CR: number = new Buffer("\r", 'ascii')[0];
+const LF: number = new Buffer("\n", 'ascii')[0];
 const CRLF: string = "\r\n";
 
 class MessageBuffer {
@@ -15,7 +17,7 @@ class MessageBuffer {
   private index: number;
   private buffer: Buffer;
 
-  constructor(encoding: string = "utf8") {
+  constructor(encoding: string = 'utf8') {
     this.encoding = encoding;
     this.index = 0;
     this.buffer = new Buffer(DefaultSize);

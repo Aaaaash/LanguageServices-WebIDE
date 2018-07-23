@@ -3,7 +3,7 @@ import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as log4js from 'log4js';
 
-import { serverBaseUri, temporaryData, ContentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
+import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
@@ -57,7 +57,7 @@ class JavaLanguageServer implements ILanguageServer {
       const jsonrpcData = JSON.stringify(data);
       Buffer.byteLength(jsonrpcData, 'utf-8');
       const headers: string[] = [
-        ContentLength,
+        contentLength,
         jsonrpcData.length.toString(),
         CRLF,
         CRLF,
@@ -73,7 +73,7 @@ class JavaLanguageServer implements ILanguageServer {
   }
 
   private prepareParams() {
-    const launchersFound: Array<string> = glob.sync(
+    const launchersFound: string[] = glob.sync(
       '**/plugins/org.eclipse.equinox.launcher_*.jar',
       { cwd: `./${this.SERVER_HOME}` },
     );
@@ -82,7 +82,7 @@ class JavaLanguageServer implements ILanguageServer {
     const dataDir = temporaryData(this.spaceKey);
 
     this.logger.info(`jdt.ls data directory: ${dataDir}`);
-  
+
     if (launchersFound.length === 0 || !launchersFound) {
       this.logger.error(
         '**/plugins/org.eclipse.equinox.launcher_*.jar Not Found!',
@@ -92,7 +92,7 @@ class JavaLanguageServer implements ILanguageServer {
       );
     }
 
-    const params: Array<string> = [
+    const params: string[] = [
       '-Xmx256m',
       '-Xms256m',
       '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y',
@@ -120,7 +120,7 @@ class JavaLanguageServer implements ILanguageServer {
     executable.options = options;
     executable.command = await findJavaHome();
     executable.args = params;
-    
+
     this.executable = executable;
   }
 }

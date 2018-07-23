@@ -1,4 +1,4 @@
-
+/* tslint:disable */
 
 import * as is from '../utils/is';
 
