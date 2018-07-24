@@ -1,33 +1,41 @@
-'use strict';
-const gulp = require('gulp');
-const decompress = require('gulp-decompress');
-const download = require('gulp-download');
-const cp = require('child_process');
+"use strict";
+const gulp = require("gulp");
+const decompress = require("gulp-decompress");
+const download = require("gulp-download");
+const cp = require("child_process");
 
-const SERVER_HOME = 'lsp-java-server';
+const SERVER_HOME = "lsp-java-server";
 
-gulp.task('download-java-server', () => {
-	download("http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz")
-		.pipe(decompress())
-		.pipe(gulp.dest(`./${SERVER_HOME}`))
+gulp.task("download-java-server", () => {
+  download(
+    "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
+  )
+    .pipe(decompress())
+    .pipe(gulp.dest(`./${SERVER_HOME}`));
 });
 
-gulp.task('install-py-server', () => {
-	cp.execSync('pip install python-language-server', { stdio: [0, 1, 2], uid: 0 });
+gulp.task("install-py-server", () => {
+  const uid = process.getuid();
+  const gid = process.getgid();
+  cp.execSync("pip install python-language-server", {
+    stdio: [0, 1, 2],
+		uid: parseInt(uid),
+    gid: parseInt(gid)
+  });
 });
 
 function isWin() {
-	return /^win/.test(process.platform);
+  return /^win/.test(process.platform);
 }
 
 function isMac() {
-	return /^darwin/.test(process.platform);
+  return /^darwin/.test(process.platform);
 }
 
 function isLinux() {
-	return /^linux/.test(process.platform);
+  return /^linux/.test(process.platform);
 }
 
 function mvnw() {
-	return isWin()?"mvnw.cmd":"./mvnw";
+  return isWin() ? "mvnw.cmd" : "./mvnw";
 }
