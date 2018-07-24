@@ -19,12 +19,19 @@ class PythonLanguageServer implements ILanguageServer {
   private spaceKey: string;
 
   public async start(): Promise<IDispose> {
+    await this.prepareExecutable();
+    this.process = cp.spawn('pyls', ['-vv']);
     return this.dispose;
   }
 
   public dispose() {
 
   }
+
+  private prepareExecutable() {
+
+  }
+
 }
 
 export default PythonLanguageServer;

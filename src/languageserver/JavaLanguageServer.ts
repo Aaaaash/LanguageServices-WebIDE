@@ -118,7 +118,11 @@ class JavaLanguageServer implements ILanguageServer {
     options.env = process.env;
     options.stdio = 'pipe';
     executable.options = options;
-    executable.command = await findJavaHome();
+    try {
+      executable.command = await findJavaHome();
+    } catch (e) {
+      this.logger.error(e.message || 'Java runtime could not be located');
+    }
     executable.args = params;
 
     this.executable = executable;

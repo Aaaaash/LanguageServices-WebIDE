@@ -15,7 +15,7 @@ install:
   - yarn install
 
 script:
-  - yarn pre-download
+  - yarn prepare:env
   - yarn tslint
   - yarn test
 

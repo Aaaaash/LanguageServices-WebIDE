@@ -3,3 +3,7 @@
 node_modules/
 
 test/
+
+pyls
+
+lsp-java-server

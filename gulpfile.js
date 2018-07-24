@@ -2,13 +2,18 @@
 const gulp = require('gulp');
 const decompress = require('gulp-decompress');
 const download = require('gulp-download');
+const cp = require('child_process');
 
 const SERVER_HOME = 'lsp-java-server';
 
-gulp.task('download-server', () => {
+gulp.task('download-java-server', () => {
 	download("http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz")
 		.pipe(decompress())
 		.pipe(gulp.dest(`./${SERVER_HOME}`))
+});
+
+gulp.task('install-py-server', () => {
+	cp.execSync('sudo pip install python-language-server', { stdio: [0, 1, 2] });
 });
 
 function isWin() {

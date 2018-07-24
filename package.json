@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "pre-download": "./node_modules/.bin/gulp download-server",
+    "prepare:env": "./node_modules/.bin/gulp download-java-server && ./node_modules/.bin/gulp install-py-server",
     "start": "export NODE_ENV=prod && node out/main.js",
     "dev": "export NODE_ENV=dev && ts-node src/main.ts",
     "build": "rm -rf out && tsc -p .",
