@@ -17,6 +17,7 @@
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "dependencies": {
+    "lodash": "^4.17.10",
     "log4js": "^2.11.0",
     "socket.io": "^2.1.1",
     "vscode": "^1.1.17",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@types/glob": "^5.0.35",
+    "@types/lodash": "^4.14.113",
     "@types/node": "^10.1.0",
     "@types/socket.io": "^1.4.33",
     "@types/winreg": "^1.2.30",

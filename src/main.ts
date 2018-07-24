@@ -74,10 +74,10 @@ server.listen(PORT, () => {
 
 process.on('uncaughtException', (err) => {
   logger.error('uncaughtException', err.stack);
-  log4js.shutdown();
+  log4js.shutdown(() => {});
 });
 
 process.on('exit', () => {
   servicesManager.disposeAll();
-  log4js.shutdown();
+  log4js.shutdown(() => {});
 });

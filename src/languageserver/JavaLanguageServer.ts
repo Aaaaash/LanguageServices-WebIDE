@@ -39,7 +39,7 @@ class JavaLanguageServer implements ILanguageServer {
     await this.prepareExecutable();
     this.logger.info('Java Executable is ready.');
 
-    this.logger.info(`command: ${this.executable.command}`);
+    this.logger.info(`command: ${this.executable.command}.`);
     this.process = cp.spawn(this.executable.command, this.executable.args);
     this.logger.info('Java Language Server is running.');
 
@@ -55,10 +55,10 @@ class JavaLanguageServer implements ILanguageServer {
 
     messageReader.listen((data) => {
       const jsonrpcData = JSON.stringify(data);
-      Buffer.byteLength(jsonrpcData, 'utf-8');
+      const length = Buffer.byteLength(jsonrpcData, 'utf-8');
       const headers: string[] = [
         contentLength,
-        jsonrpcData.length.toString(),
+        length.toString(),
         CRLF,
         CRLF,
       ];
