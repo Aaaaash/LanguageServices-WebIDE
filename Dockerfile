@@ -5,6 +5,5 @@ COPY . /app/
 RUN yarn install --registry=https://registry.npm.taobao.org \
   && yarn pre-download \
   && yarn build \
-  && rm -rf node_modules
 EXPOSE 9988
 CMD ["yarn", "start"]
