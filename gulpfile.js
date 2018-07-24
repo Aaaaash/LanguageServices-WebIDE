@@ -15,12 +15,8 @@ gulp.task("download-java-server", () => {
 });
 
 gulp.task("install-py-server", () => {
-  const uid = process.getuid();
-  const gid = process.getgid();
-  cp.execSync("pip install python-language-server", {
+  cp.execSync("sudo pip install python-language-server", {
     stdio: [0, 1, 2],
-		uid: parseInt(uid),
-    gid: parseInt(gid)
   });
 });
 
