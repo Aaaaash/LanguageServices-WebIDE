@@ -13,7 +13,7 @@ gulp.task('download-java-server', () => {
 });
 
 gulp.task('install-py-server', () => {
-	cp.execSync('pip install python-language-server', { stdio: [0, 1, 2], uid: 'root' });
+	cp.execSync('pip install python-language-server', { stdio: [0, 1, 2], uid: 0 });
 });
 
 function isWin() {
