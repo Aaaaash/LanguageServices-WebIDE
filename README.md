@@ -5,16 +5,16 @@
 ## run development
 
 ```bash
-$ cp -r xxx/eclipse.jdt.ls/server xxx/LanguageServices-WebIDE/lsp-java-server
 $ yarn install
+$ yarn prepare:env
 $ yarn dev
 ```
 
 ## run production
 
 ```bash
-$ cp -r xxx/eclipse.jdt.ls/server xxx/LanguageServices-WebIDE/lsp-java-server
 $ yarn install
+$ yarn prepare:env
 $ yarn build
 $ yarn pm2
 ```

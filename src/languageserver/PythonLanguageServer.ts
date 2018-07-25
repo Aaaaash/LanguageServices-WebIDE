@@ -54,7 +54,6 @@ class PythonLanguageServer implements ILanguageServer {
 
     socket.on('message', (data) => {
       this.messageQueue.push(data.message);
-
       if (this.connected) {
         this.sendMessageFromQueue();
       }
