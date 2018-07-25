@@ -49,7 +49,8 @@ class PythonLanguageServer implements ILanguageServer {
     this.serviceManager = LanguageServerManager.getInstance();
     this.logger.level = 'debug';
 
-    socket.on('disconnect', this.dispose.bind(this));
+    socket.on('disconnect', this.dispose);
+    socket.on('disconnecting', this.dispose);
 
     socket.on('message', (data) => {
       this.messageQueue.push(data.message);
@@ -88,6 +89,7 @@ class PythonLanguageServer implements ILanguageServer {
           this.startConversion();
 
           this.tcpSocket.on('error', (err) => {
+            clearInterval(this._interval);
             this.logger.error(err);
           });
 
@@ -122,7 +124,7 @@ class PythonLanguageServer implements ILanguageServer {
     });
   }
 
-  public dispose() {
+  public dispose = () => {
     this.logger.info(`${this.spaceKey} is disconnect.`);
 
     if (this._interval) {

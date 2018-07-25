@@ -66,7 +66,7 @@ class JavaLanguageServer implements ILanguageServer {
     });
   }
 
-  public dispose() {
+  public dispose = () => {
     this.logger.info(`${this.spaceKey} is disconnect.`);
     this.servicesManager.dispose(this.spaceKey);
     this.process.kill();

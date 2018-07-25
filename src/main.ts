@@ -79,12 +79,10 @@ process.on('uncaughtException', (err) => {
 
 process.on('SIGINT', clear);
 
-process.on('SIGTERM', () => {
-  clear();
-  process.exit();
-});
+process.on('SIGTERM', clear);
 
 function clear() {
   servicesManager.disposeAll();
   log4js.shutdown(() => {});
+  process.exit();
 }

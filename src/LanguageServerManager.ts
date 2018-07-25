@@ -39,7 +39,7 @@ class LanguageServerManager {
     this.servicesList = this.servicesList.filter(l => (l.spaceKey !== spaceKey));
   }
 
-  public disposeAll () {
+  public disposeAll = () => {
     this.logger.info('Application exit.');
     for (let i = 0; i < this.servicesList.length; i += 1) {
       const services = this.servicesList[i];
