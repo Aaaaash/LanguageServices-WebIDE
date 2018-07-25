@@ -20,6 +20,7 @@
     "lodash": "^4.17.10",
     "log4js": "^2.11.0",
     "socket.io": "^2.1.1",
+    "tree-kill": "^1.2.0",
     "vscode": "^1.1.17",
     "vscode-languageclient": "^4.1.4",
     "vscode-languageserver": "^4.1.3",

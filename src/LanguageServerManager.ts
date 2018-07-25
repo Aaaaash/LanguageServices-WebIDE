@@ -1,3 +1,5 @@
+import * as log4js from 'log4js';
+
 import { ILanguageServer, IDispose } from './types';
 
 type IServices = {
@@ -11,7 +13,10 @@ class LanguageServerManager {
 
   public servicesList: IServices[] = [];
 
+  private logger: log4js.Logger = log4js.getLogger('LanguageServerManager');
+
   private constructor () {
+    this.logger.level = 'debug';
   }
 
   static getInstance() {
@@ -35,6 +40,7 @@ class LanguageServerManager {
   }
 
   public disposeAll () {
+    this.logger.info('Application exit.');
     for (let i = 0; i < this.servicesList.length; i += 1) {
       const services = this.servicesList[i];
       services.dispose.then && services.dispose.then(fn => fn());

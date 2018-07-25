@@ -1,8 +1,8 @@
 import * as net from 'net';
 import { resolve } from 'dns';
 
-let portrange = 8080;
 
+let portrange = 1231;
 function findUselessPort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const port = portrange;
@@ -16,7 +16,7 @@ function findUselessPort(): Promise<number> {
       server.close();
     });
     server.on('error', () => {
-      return findUselessPort();
+      resolve(findUselessPort());
     });
   });
 }

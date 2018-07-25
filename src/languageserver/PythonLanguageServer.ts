@@ -2,6 +2,7 @@ import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as log4js from 'log4js';
 import * as net from 'net';
+import * as kill from 'tree-kill';
 
 import { contentLength, CRLF } from '../config';
 import { ILanguageServer, IDispose, IExecutable } from '../types';
@@ -32,6 +33,14 @@ class PythonLanguageServer implements ILanguageServer {
 
   private tcpSocket: net.Socket;
 
+  private messageQueue: string[] = [];
+
+  private connected: boolean = false;
+
+  private messageReader: SocketMessageReader;
+
+  private _interval: NodeJS.Timer;
+
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
@@ -39,40 +48,63 @@ class PythonLanguageServer implements ILanguageServer {
     this.logger.level = 'debug';
 
     socket.on('disconnect', this.dispose.bind(this));
+
+    socket.on('message', (data) => {
+      this.messageQueue.push(data.message);
+
+      if (this.connected) {
+        this.sendMessageFromQueue();
+      }
+    });
+
+  }
+
+  private async initPythonTcpServer() {
+    this.port = await findUselessPort();
+    await this.prepareExecutable();
+    this.logger.info('Python Executable is ready.');
+
+    const { command, args } = this.executable;
+    this.logger.info(`command: ${command} ${args.join(' ')}.`);
+
+    this.process = cp.spawn(command, args);
+    this.logger.info(`Python Lanugaue Server is running in TCP mode, port: ${this.port}.`);
   }
 
   public async start(): Promise<IDispose> {
-    this.port = await findUselessPort();
-    await this.prepareExecutable();
+    this.logger.info('start');
+    await this.initPythonTcpServer();
+    this._interval = setInterval(() => {
+      const socket = net.createConnection({ port: this.port }, () => {
+        this.logger.info('connected');
+        this.tcpSocket = socket;
+        this.connected = true;
 
-    // @todo 启动 tcp server
+        this.messageReader = new SocketMessageReader(this.tcpSocket);
+        this.sendMessageFromQueue();
+        this.startConversion();
 
-    this.logger.info('Python Executable is ready.');
-    this.logger.info(`command: ${this.executable.command}.`);
-    this.process = cp.spawn(this.executable.command, this.executable.args);
-    this.logger.info(`Python Lanugaue Server is running in TCP mode, port: ${this.port}.`);
+        this.tcpSocket.on('error', (err) => {
+          this.logger.error(err);
+        });
 
-    this.tcpSocket = net.createConnection({ port: this.port });
-
-    this.tcpSocket.on('connect', () => {
-      this.startConversion();
-    });
-
-    this.tcpSocket.on('error', (err) => {
-      this.logger.error(err);
-    });
+        clearInterval(this._interval);
+      });
+      socket.on('error', () => {
+        this.logger.warn('connect failure，retry...');
+      });
+    }, 500);
 
     return Promise.resolve(this.dispose);
   }
 
+  private sendMessageFromQueue() {
+    const message = this.messageQueue.shift();
+    this.tcpSocket.write(message);
+  }
+
   private startConversion() {
-    const messageReader = new SocketMessageReader(this.tcpSocket, 'utf-8');
-
-    this.socket.on('message', (data) => {
-      this.tcpSocket.write(data.message);
-    });
-
-    messageReader.listen((data) => {
+    this.messageReader.listen((data) => {
       const jsonrpcData = JSON.stringify(data);
       const length = Buffer.byteLength(jsonrpcData, 'utf-8');
       const headers: string[] = [
@@ -81,15 +113,28 @@ class PythonLanguageServer implements ILanguageServer {
         CRLF,
         CRLF,
       ];
+
       this.socket.send({ data: `${headers.join('')}${jsonrpcData}` });
     });
   }
 
   public dispose() {
     this.logger.info(`${this.spaceKey} is disconnect.`);
+
+    if (this._interval) {
+      clearInterval(this._interval);
+    }
+
+    if (this.process) {
+      kill(this.process.pid);
+      this.process.kill('SIGHUP');
+    }
+
+    if (this.tcpSocket) {
+      this.tcpSocket.destroy();
+    }
+
     this.serviceManager.dispose(this.spaceKey);
-    this.process.kill();
-    this.tcpSocket.destroy();
   }
 
   private async prepareExecutable() {
