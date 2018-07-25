@@ -1,7 +1,6 @@
 import * as net from 'net';
 import { resolve } from 'dns';
 
-
 let portrange = 1231;
 function findUselessPort(): Promise<number> {
   return new Promise((resolve, reject) => {

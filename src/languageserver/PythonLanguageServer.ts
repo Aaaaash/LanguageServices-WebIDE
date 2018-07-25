@@ -39,7 +39,9 @@ class PythonLanguageServer implements ILanguageServer {
 
   private messageReader: SocketMessageReader;
 
+  /* tslint:disable */
   private _interval: NodeJS.Timer;
+  /* tslint:enable */
 
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
@@ -74,26 +76,28 @@ class PythonLanguageServer implements ILanguageServer {
   public async start(): Promise<IDispose> {
     this.logger.info('start');
     await this.initPythonTcpServer();
-    this._interval = setInterval(() => {
-      const socket = net.createConnection({ port: this.port }, () => {
-        this.logger.info('connected');
-        this.tcpSocket = socket;
-        this.connected = true;
+    this._interval = setInterval(
+      () => {
+        const socket = net.createConnection({ port: this.port }, () => {
+          this.logger.info('connected');
+          this.tcpSocket = socket;
+          this.connected = true;
 
-        this.messageReader = new SocketMessageReader(this.tcpSocket);
-        this.sendMessageFromQueue();
-        this.startConversion();
+          this.messageReader = new SocketMessageReader(this.tcpSocket);
+          this.sendMessageFromQueue();
+          this.startConversion();
 
-        this.tcpSocket.on('error', (err) => {
-          this.logger.error(err);
+          this.tcpSocket.on('error', (err) => {
+            this.logger.error(err);
+          });
+
+          clearInterval(this._interval);
         });
-
-        clearInterval(this._interval);
-      });
-      socket.on('error', () => {
-        this.logger.warn('connect failure，retry...');
-      });
-    }, 500);
+        socket.on('error', () => {
+          this.logger.warn('connect failure，retry...');
+        });
+      },
+      500);
 
     return Promise.resolve(this.dispose);
   }

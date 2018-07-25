@@ -77,7 +77,14 @@ process.on('uncaughtException', (err) => {
   log4js.shutdown(() => {});
 });
 
-process.on('exit', () => {
+process.on('SIGINT', clear);
+
+process.on('SIGTERM', () => {
+  clear();
+  process.exit();
+});
+
+function clear() {
   servicesManager.disposeAll();
   log4js.shutdown(() => {});
-});
+}
