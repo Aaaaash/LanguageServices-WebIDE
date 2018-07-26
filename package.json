@@ -16,9 +16,9 @@
     "pm2": "pm2 start npm -- start",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
-  "pre-commit": {
+  "pre-commit": [
     "tslint"
-  },
+  ],
   "dependencies": {
     "lodash": "^4.17.10",
     "log4js": "^2.11.0",
