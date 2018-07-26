@@ -14,9 +14,12 @@
     "test": "export NODE_ENV=dev && npm run test:ava && npm run clean:test",
     "tslint": "tslint --project .",
     "pm2": "pm2 start npm -- start",
+    "pre-commitmsg": "echo 'Pre-commit checks...' && exit 0",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
   "pre-commit": [
+    "pre-commitmsg",
+    "test",
     "tslint"
   ],
   "dependencies": {
