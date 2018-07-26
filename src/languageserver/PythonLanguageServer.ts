@@ -4,7 +4,7 @@ import * as log4js from 'log4js';
 import * as net from 'net';
 import * as kill from 'tree-kill';
 
-import { contentLength, CRLF } from '../config';
+import { contentLength, CRLF } from '../config'; 
 import { ILanguageServer, IDispose, IExecutable } from '../types';
 import findPylsHome from '../utils/findPylsHome';
 import findUselessPort from '../utils/findUselessPort';

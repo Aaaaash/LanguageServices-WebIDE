@@ -16,6 +16,9 @@
     "pm2": "pm2 start npm -- start",
     "build:start": "rm -rf lsp-java-server && npm run pre-download && rm -rf out && tsc && node out/languageServer.js"
   },
+  "pre-commit": {
+    "tslint"
+  },
   "dependencies": {
     "lodash": "^4.17.10",
     "log4js": "^2.11.0",
@@ -40,9 +43,11 @@
     "gulp": "^3.9.1",
     "gulp-decompress": "^2.0.2",
     "gulp-download": "^0.0.1",
+    "pre-commit": "^1.2.2",
     "tap-nyan": "^1.1.0",
     "tslint": "^5.11.0",
     "tslint-config-airbnb": "^5.9.2",
+    "tslint-config-prettier": "^1.14.0",
     "typescript": "^2.9.2"
   },
   "ava": {
