@@ -44,6 +44,12 @@ class JavaLanguageServer implements ILanguageServer {
     this.logger.info('Java Language Server is running.');
 
     this.startConversion();
+
+    this.process.on('exit', (code: number, signal: string) => {
+      this.logger.warn(`jdt.ls exit, code: ${code}, singnal: ${signal}.`);
+      this.dispose();
+    });
+
     return Promise.resolve(this.dispose);
   }
 
