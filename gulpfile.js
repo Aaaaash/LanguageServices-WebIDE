@@ -23,7 +23,7 @@ gulp.task("download-java-server", () => {
 gulp.task("install-py-server", () => {
   cp.exec('pyls -h', (err, stdout, stderr) => {
     if (err) {
-      cp.execSync("sudo pip install python-language-server", {
+      cp.execSync("sudo pip install 'python-language-server[all]'", {
         stdio: [0, 1, 2],
       });
     }
