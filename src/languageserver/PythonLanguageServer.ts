@@ -11,6 +11,16 @@ import findUselessPort from '../utils/findUselessPort';
 import { SocketMessageReader } from '../jsonrpc/messageReader';
 import LanguageServerManager from '../LanguageServerManager';
 
+enum ClientState {
+  Initial,
+  Starting,
+  Started,
+  StartFailed,
+  Running,
+  Stopping,
+  Stopped,
+}
+
 class PythonLanguageServer implements ILanguageServer {
 
   private SERVER_HOME = 'lsp-python-server';
@@ -87,13 +97,20 @@ class PythonLanguageServer implements ILanguageServer {
   public async start(): Promise<IDispose> {
     this.logger.info('start');
     await this.initPythonTcpServer();
+
+    let progress = 0;
     this._interval = setInterval(
       () => {
+        const message = `${progress}% Starting Python Language Server`;
+        progress += 10;
+        this.sendLanguageStatus(ClientState.Starting, message);
         const socket = net.createConnection({ port: this.port }, () => {
           this.logger.info('connected');
           this.tcpSocket = socket;
           this.connected = true;
 
+          this.sendLanguageStatus(ClientState.Starting, '100% Starting Python Language Server');
+          this.sendLanguageStatus(ClientState.Started, 'Ready');
           this.messageReader = new SocketMessageReader(this.tcpSocket);
           this.sendMessageFromQueue();
           this.startConversion();
@@ -112,6 +129,21 @@ class PythonLanguageServer implements ILanguageServer {
       500);
 
     return Promise.resolve(this.dispose);
+  }
+
+  private sendLanguageStatus(type: ClientState, message: string): void {
+    const status = JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'language/status',
+      params: {
+        message,
+        type,
+      },
+    });
+
+    this.socket.send({
+      data: `${contentLength}: ${Buffer.byteLength(status, 'utf-8')}${status}`,
+    });
   }
 
   private sendMessageFromQueue() {
