@@ -142,8 +142,14 @@ class PythonLanguageServer implements ILanguageServer {
       },
     });
 
+    const header: string[] = [
+      contentLength,
+      Buffer.byteLength(status, 'utf-8').toString(),
+      CRLF,
+      CRLF,
+    ];
     this.socket.send({
-      data: `${contentLength}${CRLF}${CRLF}${Buffer.byteLength(status, 'utf-8')}${status}`,
+      data: `${header.join('')}${status}`,
     });
   }
 
