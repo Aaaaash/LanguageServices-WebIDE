@@ -98,7 +98,7 @@ class PythonLanguageServer implements ILanguageServer {
   public async start(): Promise<IDispose> {
     this.logger.info('start');
     await this.initPythonTcpServer();
-
+    this.sendLanguageStatus(ClientState.Starting, 'Init...');
     let progress = 0;
     this._interval = setInterval(
       () => {
@@ -137,8 +137,8 @@ class PythonLanguageServer implements ILanguageServer {
       jsonrpc: '2.0',
       method: LANGUAGE_STATUS,
       params: {
-        message,
         type,
+        message,
       },
     });
 
