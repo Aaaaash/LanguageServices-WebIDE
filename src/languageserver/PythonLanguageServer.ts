@@ -143,7 +143,7 @@ class PythonLanguageServer implements ILanguageServer {
     });
 
     this.socket.send({
-      data: `${contentLength}: ${Buffer.byteLength(status, 'utf-8')}${status}`,
+      data: `${contentLength}${CRLF}${CRLF}${Buffer.byteLength(status, 'utf-8')}${status}`,
     });
   }
 
