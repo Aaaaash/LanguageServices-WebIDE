@@ -10,6 +10,7 @@ import findPylsHome from '../utils/findPylsHome';
 import findUselessPort from '../utils/findUselessPort';
 import { SocketMessageReader } from '../jsonrpc/messageReader';
 import LanguageServerManager from '../LanguageServerManager';
+import { LANGUAGE_STATUS } from '../protocol';
 
 enum ClientState {
   Initial,
@@ -134,7 +135,7 @@ class PythonLanguageServer implements ILanguageServer {
   private sendLanguageStatus(type: ClientState, message: string): void {
     const status = JSON.stringify({
       jsonrpc: '2.0',
-      method: 'language/status',
+      method: LANGUAGE_STATUS,
       params: {
         message,
         type,
