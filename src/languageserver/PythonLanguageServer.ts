@@ -157,7 +157,7 @@ class PythonLanguageServer implements ILanguageServer {
     } catch (e) {
       this.logger.error(e.message || 'Pyls could not be located');
     }
-    executable.args = ['--tcp', `--port=${this.port}`];
+    executable.args = ['--tcp', '-v', `--port=${this.port}`];
 
     this.executable = executable;
   }
