@@ -14,6 +14,7 @@ export interface ILanguageServer {
   start: () => Promise<IDispose>;
   dispose: () => void;
   type: Symbol;
+  destroyed: boolean;
 }
 
 // export type LanguageServer = typeof

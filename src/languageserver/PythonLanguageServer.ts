@@ -43,6 +43,8 @@ class PythonLanguageServer implements ILanguageServer {
   private _interval: NodeJS.Timer;
   /* tslint:enable */
 
+  public destroyed: boolean = false;
+
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
@@ -136,6 +138,7 @@ class PythonLanguageServer implements ILanguageServer {
   }
 
   public dispose = () => {
+    this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
 
     if (this._interval) {

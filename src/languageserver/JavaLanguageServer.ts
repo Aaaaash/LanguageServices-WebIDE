@@ -26,6 +26,8 @@ class JavaLanguageServer implements ILanguageServer {
 
   private socket: io.Socket;
 
+  public destroyed: boolean = false;
+
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
@@ -73,6 +75,7 @@ class JavaLanguageServer implements ILanguageServer {
   }
 
   public dispose = () => {
+    this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
     this.servicesManager.dispose(this.spaceKey);
     this.process.kill();

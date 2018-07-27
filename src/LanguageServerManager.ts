@@ -28,7 +28,7 @@ class LanguageServerManager {
   }
 
   public servicesIsExisted (spaceKey: string) {
-    return this.servicesList.find(s => (s.spaceKey === spaceKey));
+    return this.servicesList.find(s => (s.spaceKey === spaceKey && !!s.server.destroyed));
   }
 
   public push (services: IServices) {
