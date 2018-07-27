@@ -13,13 +13,13 @@ import LanguageServerManager from '../LanguageServerManager';
 import { LANGUAGE_STATUS } from '../protocol';
 
 enum ClientState {
-  Initial,
-  Starting,
-  Started,
-  StartFailed,
-  Running,
-  Stopping,
-  Stopped,
+  Initial = 'Initial',
+  Starting = 'Starting',
+  Started = 'Started',
+  StartFailed = 'StartFailed',
+  Running = 'Running',
+  Stopping = 'Stopping',
+  Stopped = 'Stopped',
 }
 
 class PythonLanguageServer implements ILanguageServer {
