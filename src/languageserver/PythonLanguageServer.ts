@@ -72,6 +72,10 @@ class PythonLanguageServer implements ILanguageServer {
     this.process = cp.spawn(command, args);
     this.logger.info(`Python Lanugaue Server is running in TCP mode, port: ${this.port}.`);
 
+    this.process.on('data', (data) => {
+      this.logger.info(data.toString());
+    });
+
     this.process.on('exit', (code: number, signal: string) => {
       this.logger.warn(`pyls exit, code: ${code}, singnal: ${signal}.`);
       this.dispose();
