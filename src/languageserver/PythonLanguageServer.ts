@@ -98,10 +98,10 @@ class PythonLanguageServer implements ILanguageServer {
   public async start(): Promise<IDispose> {
     this.logger.info('start');
     await this.initPythonTcpServer();
-    this.sendLanguageStatus(ClientState.Starting, 'Init...');
-    let progress = 0;
+    let progress = 10;
     this._interval = setInterval(
       () => {
+        this.sendLanguageStatus(ClientState.Starting, 'Init...');
         const message = `${progress}% Starting Python Language Server`;
         progress += 10;
         this.sendLanguageStatus(ClientState.Starting, message);
