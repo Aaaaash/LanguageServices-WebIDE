@@ -113,6 +113,9 @@ class PythonLanguageServer implements ILanguageServer {
   }
 
   private sendMessageFromQueue() {
+    if (this.messageQueue.length === 0) {
+      return;
+    }
     const message = this.messageQueue.shift();
     this.tcpSocket.write(message);
   }
