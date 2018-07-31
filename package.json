@@ -7,7 +7,7 @@
     "prepare:env": "./node_modules/.bin/gulp download-java-server && ./node_modules/.bin/gulp install-py-server",
     "start": "export NODE_ENV=prod && node out/main.js",
     "dev": "export NODE_ENV=dev && ts-node src/main.ts",
-    "build": "rm -rf out && tsc -p .",
+    "build": "npm run clean:build && tsc -p .",
     "pretest": "rm -rf __test__ && tsc -p test/",
     "clean:test": "rm -rf __test__",
     "test:ava": "node node_modules/ava/cli.js --verbose",
@@ -51,7 +51,7 @@
     "tslint": "^5.11.0",
     "tslint-config-airbnb": "^5.9.2",
     "tslint-config-prettier": "^1.14.0",
-    "typescript": "^2.9.2"
+    "typescript": "3.0.1"
   },
   "ava": {
     "files": [
