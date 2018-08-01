@@ -31,6 +31,15 @@ gulp.task("install-py-server", () => {
   });
 });
 
+gulp.task('build_debug_server', () => {
+	cp.execSync(mvnw() + ' clean package', {
+		cwd: server_dir,
+		stdio: [0, 1, 2]
+	});
+	gulp.src(server_dir + '/com.microsoft.java.debug.plugin/target/com.microsoft.java.debug.*.jar')
+		.pipe(gulp.dest('./server'));
+});
+
 function isWin() {
   return /^win/.test(process.platform);
 }
