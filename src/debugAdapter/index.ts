@@ -49,7 +49,7 @@ const initialized = `Content-Length: 51\r\n\r\b
 		 * }
 		 */
 
-const launch = `Content-Length: 338 \r\n\r\n
+const launch = `Content-Length: 339 \r\n\r\n
 {
   "type":"request",
   "seq":3,"command":"launch",
@@ -62,7 +62,7 @@ const launch = `Content-Length: 338 \r\n\r\n
     "stopOnEntry":false,
     "args":"",
     "internalConsoleOptions":"neverOpen",
-    "debugServer":4711,
+    "debugServer":${port},
     "mainClass":"net.coding.demo.Application"
   }
 }`;
@@ -83,4 +83,8 @@ const socket = net.createConnection({ port }, (connection) => {
 socket.on('data', (data) => {
   console.log('response');
   console.log(data.toString());
+});
+
+socket.on('error', (err) => {
+  console.log(err.message);
 });
