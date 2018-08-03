@@ -5677,6 +5677,10 @@ vinyl@^2.0.1, vinyl@^2.0.2, vinyl@^2.1.0:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
+vscode-debugprotocol@^1.31.0:
+  version "1.31.0"
+  resolved "http://registry.npm.taobao.org/vscode-debugprotocol/download/vscode-debugprotocol-1.31.0.tgz#8467eeabeea65f52da5ac03b03c18e10e8b95eb4"
+
 vscode-jsonrpc@^3.3.0, vscode-jsonrpc@^3.6.2:
   version "3.6.2"
   resolved "http://registry.npm.taobao.org/vscode-jsonrpc/download/vscode-jsonrpc-3.6.2.tgz#3b5eef691159a15556ecc500e9a8a0dd143470c8"
