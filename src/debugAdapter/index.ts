@@ -10,7 +10,7 @@ abstract class DebugAdapter {
 
   protected logger: log4js.Logger = log4js.getLogger('DebugAdapter');
 
-  private socket: net.Socket;
+  public socket: net.Socket;
 
   private messageReader: SocketMessageReader;
   private messageWriter: SocketMessageWriter;
