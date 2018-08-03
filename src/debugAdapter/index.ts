@@ -22,6 +22,7 @@ const initialize = `Content-Length: 312\r\n
     "type": "request"
 }`;
 
+const initialized = `Content-Length: 51\r\n\r\b{"type": "event", "event": "initialized", "seq": 2}`;
 const socket = net.createConnection({ port }, (connection) => {
   console.log(`connect, port: ${port}`);
 
@@ -29,5 +30,8 @@ const socket = net.createConnection({ port }, (connection) => {
 });
 
 socket.on('data', (data) => {
+  console.log('response');
   console.log(data.toString());
+
+  socket.emit('data', initialized);
 });
