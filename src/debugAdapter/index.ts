@@ -1,6 +1,6 @@
 import * as net from 'net';
 
-const port = parseInt(process.argv[0], 10);
+const port = parseInt(process.argv[2], 10);
 
 const initialize = `Content-Length: 312\r\n
 \r\n
@@ -23,7 +23,7 @@ const initialize = `Content-Length: 312\r\n
 }`;
 
 const socket = net.createConnection({ port }, (connection) => {
-  console.log('connect');
+  console.log(`connect, port: ${port}`);
 
   socket.emit('data', initialize);
 });
