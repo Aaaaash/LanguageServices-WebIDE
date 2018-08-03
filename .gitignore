@@ -13,3 +13,5 @@ repository
 pyls
 
 .idea
+
+com.microsoft.java.debug.plugin-0.10.0.jar
