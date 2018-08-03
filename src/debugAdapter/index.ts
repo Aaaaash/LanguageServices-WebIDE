@@ -23,12 +23,11 @@ const initialize = JSON.stringify({
   "type":"request"
 });
 
-const initialized = `Content-Length: 51\r\n\r\b
-{
+const initialized = JSON.stringify({
   "type":"event",
   "event":"initialized",
   "seq":2
-}`;
+});
 /**
 		 * {
 		 * 	type: "request",
@@ -49,8 +48,7 @@ const initialized = `Content-Length: 51\r\n\r\b
 		 * }
 		 */
 
-const launch = `Content-Length: 339 \r\n\r\n
-{
+const launch = JSON.stringify({
   "type":"request",
   "seq":3,"command":"launch",
   "arguments":{
@@ -62,10 +60,10 @@ const launch = `Content-Length: 339 \r\n\r\n
     "stopOnEntry":false,
     "args":"",
     "internalConsoleOptions":"neverOpen",
-    "debugServer":${port},
+    "debugServer":`${port}`,
     "mainClass":"net.coding.demo.Application"
-  }
-}`;
+  },
+});
 
 const timeout = 5000;
 
