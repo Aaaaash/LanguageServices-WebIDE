@@ -1,17 +1,10 @@
 node_modules
 *.log
 workspace
-
 out
-
 lsp-java-server
-
 __test__
-
 repository
-
 pyls
-
 .idea
-
 com.microsoft.java.debug.plugin-0.10.0.jar
