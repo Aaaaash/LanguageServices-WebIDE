@@ -55,7 +55,7 @@ const launch = JSON.stringify({
     "type":"java",
     "name":"Debug (Launch)",
     "request":"launch",
-    "cwd":"file:///data/coding-ide-home/workspace/esyfrs/working-dir",
+    "cwd":"/data/coding-ide-home/workspace/esyfrs/working-dir",
     "console":"internalConsole",
     "stopOnEntry":false,
     "args":"",
