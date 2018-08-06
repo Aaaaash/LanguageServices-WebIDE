@@ -9,7 +9,7 @@ import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 class ProtocolServer {
   public type: string = 'java';
 
-  public debugAdapter: IDebugAdapter;
+  public debugAdapter: JavaDebugAdapter;
 
   public messageReader: SocketMessageReader;
   public messageWriter: SocketMessageWriter;
@@ -27,7 +27,8 @@ class ProtocolServer {
   getPort = () => this.port;
 
   public start = () => {
-    this.webSocket.emit('connect', true);
+    this.debugAdapter.registerRequestHandler();
+    this.webSocket.emit('connect', 'success');
     // @TODO
   }
 

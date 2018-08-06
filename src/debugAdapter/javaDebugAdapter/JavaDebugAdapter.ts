@@ -6,8 +6,18 @@ import * as log4js from 'log4js';
 import DebugAdapter from '../index';
 /* tslint:enable */
 import JavaDebugContext from './JavaDebugContext';
-// import protocolCommands from '../../debugProtocol/commands';
 // import protocolRequests from '../../debugProtocol/requests';
+import ConfigurationDoneRequestHandler from './ConfigurationDoneRequestHandler';
+import InitializeRequestHandler from './InitializeRequestHandler';
+import LaunchRequestHandler from './LaunchRequestHandler';
+import SetBreakpointRequestHandler from './SetBreakpointRequestHandler';
+
+const commands = [
+  { command: 'configurationDone', handle: ConfigurationDoneRequestHandler },
+  { command: 'initialize', handle: InitializeRequestHandler },
+  { command: 'launch', handle: LaunchRequestHandler },
+  { command: 'setBreakpoint', handle: SetBreakpointRequestHandler },
+];
 
 class JavaDebugAdapter {
   public type: string = 'java';
@@ -22,13 +32,17 @@ class JavaDebugAdapter {
     private socket: net.Socket,
   ) {
     this.logger.level = 'debug';
-    this.webSocket.on('data', this.handleWsMessage);
-    this.registerRequestHandler();
+    // this.webSocket.on('data', this.handleWsMessage);
   }
 
-  private registerRequestHandler() {
-    // TODO
+  public registerRequestHandler() {
     this.initContext();
+    commands.forEach((command) => {
+      this.webSocket.on(command.command, (data: any) => {
+        const handler = new command.handle(this.debugContext);
+        handler.handle(data);
+      });
+    });
   }
 
   private handleRequest() {
@@ -41,10 +55,6 @@ class JavaDebugAdapter {
 
   public initContext() {
     this.debugContext = new JavaDebugContext(this.socket, this.type, this.webSocket);
-  }
-
-  public handleWsMessage(data) {
-    console.log(data);
   }
 }
 
