@@ -1,43 +1,29 @@
 import * as net from 'net';
 import * as io from 'socket.io';
-import * as log4js from 'log4js';
+import JavaDebugAdapter from './JavaDebugAdapter';
+import IDebugAdapter from '../../debugProtocol/IDebugAdapter';
 
-/* tslint:disable */
-import DebugAdapter from '../index';
-/* tslint:enable */
-import JavaDebugContext from './JavaDebugContext';
-// import protocolCommands from '../../debugProtocol/commands';
-// import protocolRequests from '../../debugProtocol/requests';
-
-class JavaDebugAdapter extends DebugAdapter {
+class ProtocolServer {
   public type: string = 'java';
 
-  protected logger: log4js.Logger = log4js.getLogger('JavaDebugAdapter');
-
-  public context: JavaDebugContext;
-
+  public debugAdapter: IDebugAdapter;
   constructor(
-    port: number,
-    private webSocket: io.Socket,
+    public port: number,
+    public webSocket: io.Socket,
+    public socket: net.Socket,
   ) {
-    super(port);
-    this.logger.level = 'debug';
-    this.registerRequestHandler();
+    this.debugAdapter = new JavaDebugAdapter(port, webSocket, socket);
   }
 
-  private registerRequestHandler() {
-    // TODO
+  getPort = () => this.port;
 
-    this.initContext();
+  public start = () => {
+    // @TODO
   }
 
-  private handleRequest() {
-
-  }
-
-  public initContext() {
-    this.context = new JavaDebugContext(this.socket, this.type, this.webSocket);
+  public stop = () => {
+    // @TODO
   }
 }
 
-export default JavaDebugAdapter;
+export default ProtocolServer;

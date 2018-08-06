@@ -33,7 +33,13 @@ const server = http.createServer();
 const logger = log4js.getLogger('main');
 logger.level = 'debug';
 
-const socket = io(server);
+const socket = io(server, {
+  path: '',
+  serveClient: false,
+  pingInterval: 10000,
+  pingTimeout: 5000,
+  cookie: false,
+});
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true);
@@ -61,6 +67,37 @@ socket.on('connection', (websocket: io.Socket) => {
     const languageServer = new (<any>ServerClass)(<string>ws, websocket);
     const dispose = languageServer.start();
     servicesManager.push({ dispose, spaceKey: <string>ws, server: languageServer });
+  }
+});
+
+const debugIo = io(server, {
+  path: '/debug',
+  serveClient: false,
+  pingInterval: 10000,
+  pingTimeout: 5000,
+  cookie: false,
+});
+
+debugIo.on('connection', (websocket: io.Socket) => {
+  const urlPart = url.parse(websocket.request.url, true);
+  const { port, language, ws } = urlPart.query;
+  if (!port) {
+    logger.error(`Missing required parameter 'port'.`);
+    websocket.send({ data: `Missing required parameter 'port'.` });
+    return;
+  }
+
+  if (!language) {
+    logger.error(`Missing required parameter 'language'.`);
+    websocket.send({ data: `Missing required parameter 'language'.` });
+    return;
+  }
+
+  if (servicesManager.servicesIsExisted(ws as string)) {
+    websocket.send({ data: `${ws} is already exists.` });
+    logger.warn(`${ws} is already exists.`);
+  } else {
+    console.log(port, language, ws);
   }
 });
 

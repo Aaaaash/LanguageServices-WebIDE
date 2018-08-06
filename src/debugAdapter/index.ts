@@ -1,5 +1,11 @@
 import * as net from 'net';
+import * as io from 'socket.io';
 import * as log4js from 'log4js';
+
+/* tslint:disable */
+import JavaDebugServer from './javaDebugAdapter';
+/* tslint:enab;e */
+import IDebugServer from '../debugProtocol/IDebugServer';
 
 import { SocketMessageReader } from '../jsonrpc/messageReader';
 import { SocketMessageWriter } from '../jsonrpc/messageWriter';
@@ -15,8 +21,10 @@ abstract class DebugAdapter {
   private messageReader: SocketMessageReader;
   private messageWriter: SocketMessageWriter;
 
+  private debugServer: IDebugServer;
   constructor(
     private port: number,
+    private webSocket: io.Socket,
   ) {
     this.initServer();
   }
@@ -27,6 +35,8 @@ abstract class DebugAdapter {
       this.messageReader = new SocketMessageReader(this.socket);
       this.messageWriter = new SocketMessageWriter(this.socket);
       this.messageReader.listen(this.handleResponse);
+
+      this.debugServer = new JavaDebugServer(this.port, this.webSocket, this.socket);
     });
 
     this.socket.on('error', (err) => {
