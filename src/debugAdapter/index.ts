@@ -18,6 +18,7 @@ class DebugAdapter {
     private webSocket: io.Socket,
   ) {
     this.socket = net.createConnection({ port: this.port }, () => {
+      this.logger.info(`Connect JavaDebugAdapter, port: ${this.port}`);
       this.debugServer = new JavaDebugServer(this.port, this.webSocket, this.socket);
       this.debugServer.start();
     });
