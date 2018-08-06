@@ -93,12 +93,7 @@ debugIo.on('connection', (websocket: io.Socket) => {
     return;
   }
 
-  if (servicesManager.servicesIsExisted(ws as string)) {
-    websocket.send({ data: `${ws} is already exists.` });
-    logger.warn(`${ws} is already exists.`);
-  } else {
-    console.log(port, language, ws);
-  }
+  console.log(port, language, ws);
 });
 
 socket.on('error', (err) => {
