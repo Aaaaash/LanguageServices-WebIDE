@@ -44,7 +44,7 @@ export default class InitializeRequestHandler implements IRequestHandler {
     const request = JSON.stringify({
       command: this.command,
       arguments: params,
-      seq: this.debugContext.seq,
+      seq: this.debugContext.getSeq(),
       type: 'request',
     });
     const length = Buffer.byteLength(request, 'utf-8');
