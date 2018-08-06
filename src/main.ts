@@ -43,7 +43,7 @@ const socket = io(server, {
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true);
-  const { ws, language } = urlPart.query;
+  const { ws, language, port, debug } = urlPart.query;
 
   if (!ws) {
     logger.error(`Missing required parameter 'ws'.`);
@@ -57,43 +57,27 @@ socket.on('connection', (websocket: io.Socket) => {
     return;
   }
 
-  if (servicesManager.servicesIsExisted(ws as string)) {
-    websocket.send({ data: `${ws} is already exists.` });
-    logger.warn(`${ws} is already exists.`);
+  if (debug) {
+    if (!port) {
+      logger.error(`Missing required parameter 'port'.`);
+      websocket.send({ data: `Missing required parameter 'port'.` });
+      return;
+    }
+
+    logger.info(`${language} debugAdapter port is ${port}`);
   } else {
-    /* tslint:disable */
-    const ServerClass = serverProfiles.find(l => l.language === language).server;
-    /* tslint:enable */
-    const languageServer = new (<any>ServerClass)(<string>ws, websocket);
-    const dispose = languageServer.start();
-    servicesManager.push({ dispose, spaceKey: <string>ws, server: languageServer });
+    if (servicesManager.servicesIsExisted(ws as string)) {
+      websocket.send({ data: `${ws} is already exists.` });
+      logger.warn(`${ws} is already exists.`);
+    } else {
+      /* tslint:disable */
+      const ServerClass = serverProfiles.find(l => l.language === language).server;
+      /* tslint:enable */
+      const languageServer = new (<any>ServerClass)(<string>ws, websocket);
+      const dispose = languageServer.start();
+      servicesManager.push({ dispose, spaceKey: <string>ws, server: languageServer });
+    }
   }
-});
-
-const debugIo = io(server, {
-  path: '/debug',
-  serveClient: false,
-  pingInterval: 10000,
-  pingTimeout: 5000,
-  cookie: false,
-});
-
-debugIo.on('connection', (websocket: io.Socket) => {
-  const urlPart = url.parse(websocket.request.url, true);
-  const { port, language, ws } = urlPart.query;
-  if (!port) {
-    logger.error(`Missing required parameter 'port'.`);
-    websocket.send({ data: `Missing required parameter 'port'.` });
-    return;
-  }
-
-  if (!language) {
-    logger.error(`Missing required parameter 'language'.`);
-    websocket.send({ data: `Missing required parameter 'language'.` });
-    return;
-  }
-
-  logger.info(`${language} debugAdapter port is ${port}`);
 });
 
 socket.on('error', (err) => {
