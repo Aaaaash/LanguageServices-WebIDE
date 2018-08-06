@@ -7,6 +7,7 @@ import { PORT } from './config';
 import LanguageServerManager from './LanguageServerManager';
 /* tslint:disable */
 import serverProfiles from './languageserver';
+import DebugAdapter from './debugAdapter';
 /* tslint:enable */
 
 if (process.env.NODE_ENV === 'prod') {
@@ -65,6 +66,8 @@ socket.on('connection', (websocket: io.Socket) => {
     }
 
     logger.info(`${language} debugAdapter port is ${port}`);
+
+    const  debugAdapter = new DebugAdapter(Number(port as string), websocket);
   } else {
     if (servicesManager.servicesIsExisted(ws as string)) {
       websocket.send({ data: `${ws} is already exists.` });

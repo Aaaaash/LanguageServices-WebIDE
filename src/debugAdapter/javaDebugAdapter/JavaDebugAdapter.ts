@@ -22,12 +22,12 @@ class JavaDebugAdapter {
     private socket: net.Socket,
   ) {
     this.logger.level = 'debug';
+    this.webSocket.on('data', this.handleWsMessage);
     this.registerRequestHandler();
   }
 
   private registerRequestHandler() {
     // TODO
-
     this.initContext();
   }
 
@@ -41,6 +41,10 @@ class JavaDebugAdapter {
 
   public initContext() {
     this.debugContext = new JavaDebugContext(this.socket, this.type, this.webSocket);
+  }
+
+  public handleWsMessage(data) {
+    console.log(data);
   }
 }
 
