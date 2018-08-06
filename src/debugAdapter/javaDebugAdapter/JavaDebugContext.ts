@@ -19,6 +19,7 @@ export default class JavaDebugContext implements IDebugContext {
   }
 
   get seq (): number {
-    return this._seq += 1;
+    this._seq += 1;
+    return this._seq;
   }
 }
