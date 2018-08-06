@@ -8,6 +8,6 @@ export default interface IDebugContext {
   messageReader: SocketMessageReader;
   messageWriter: SocketMessageWriter;
   type: string;
-  seq: number;
+  getSeq: () => number;
   [prop: string]: any;
 }
