@@ -8,7 +8,7 @@ import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 
 export default class JavaDebugContext implements IDebugContext {
   /* tslint:disable */
-  private seq: number;
+  private seq: number = 0;
   /* tslint:enable */
   constructor(
     public messageReader: SocketMessageReader,
