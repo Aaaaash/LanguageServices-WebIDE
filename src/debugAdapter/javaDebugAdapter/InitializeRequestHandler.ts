@@ -49,6 +49,10 @@ export default class InitializeRequestHandler implements IRequestHandler {
     });
     const length = Buffer.byteLength(request, 'utf-8');
     this.logger.info(`Receive request: ${this.command}\r\nparams: ${request}`);
-    this.debugContext.socket.write(`${contentLength}${length}${CRLF}${CRLF}${request}`);
+
+    const jsonrpc = [contentLength, length, CRLF, CRLF, request];
+    this.debugContext.messageWriter.write({
+      jsonrpc: jsonrpc.join(''),
+    });
   }
 }

@@ -2,6 +2,8 @@ import * as net from 'net';
 import * as io from 'socket.io';
 import * as log4js from 'log4js';
 
+import { SocketMessageReader } from '../../jsonrpc/messageReader';
+import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 /* tslint:disable */
 import DebugAdapter from '../index';
 /* tslint:enable */
@@ -29,7 +31,8 @@ class JavaDebugAdapter {
   constructor(
     private port: number,
     private webSocket: io.Socket,
-    private socket: net.Socket,
+    private messageReader: SocketMessageReader,
+    private messageWriter: SocketMessageWriter,
   ) {
     this.logger.level = 'debug';
     // this.webSocket.on('data', this.handleWsMessage);
@@ -45,16 +48,17 @@ class JavaDebugAdapter {
     });
   }
 
-  private handleRequest() {
-
-  }
-
   public dispatchRequest() {
 
   }
 
   public initContext() {
-    this.debugContext = new JavaDebugContext(this.socket, this.type, this.webSocket);
+    this.debugContext = new JavaDebugContext(
+      this.messageReader,
+      this.messageWriter,
+      this.type,
+      this.webSocket,
+    );
   }
 }
 
