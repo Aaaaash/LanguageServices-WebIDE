@@ -77,8 +77,8 @@ class JavaProtocolServer {
     this.socket.write(jsonrpc.join(''));
   }
 
-  public launchRequestHandler = () => {
-
+  public launchRequestHandler = (request) => {
+    this.initializeRequestHandler(request);
   }
 
   public setBreakpointRequestHandler = () => {
