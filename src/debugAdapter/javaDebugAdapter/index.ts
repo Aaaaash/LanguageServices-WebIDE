@@ -59,6 +59,9 @@ class JavaProtocolServer {
         const deserialiParams = JSON.parse(params);
         if (deserialiParams.arguments.command === command.command) {
           command.handle(params);
+          this.logger.info(
+            `Receive request: ${params.arguments.command}\r\nparams: ${params}`,
+          );
         }
       });
     });
@@ -77,7 +80,6 @@ class JavaProtocolServer {
     this.messageWriter.write({
       jsonrpc: jsonrpc.join(''),
     });
-    this.logger.info(`Receive request: ${params.arguments.command}\r\nparams: ${jsonrpc.join('')}`);
   }
 
   public launchRequestHandler() {
