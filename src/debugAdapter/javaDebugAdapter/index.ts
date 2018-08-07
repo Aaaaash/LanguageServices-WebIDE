@@ -27,7 +27,7 @@ class JavaProtocolServer {
     this.messageReader = new SocketMessageReader(socket);
 
     this.messageReader.listen((data) => {
-      this.webSocket.send('message', data);
+      this.webSocket.send('message', JSON.stringify(data));
     });
 
     this.commands = [
