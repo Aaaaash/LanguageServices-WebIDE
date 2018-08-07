@@ -1,6 +1,7 @@
-const requests: string[] = [
-  'request',
-  'response',
-];
+enum Requests {
+  REQUEST = 'request',
+  RESPONSE = 'response',
+  EVENT = 'event',
+}
 
-export default requests;
+export default Requests;

@@ -4,6 +4,7 @@ import * as log4js from 'log4js';
 
 import JavaDebugAdapter from './JavaDebugAdapter';
 import IDebugAdapter from '../../debugProtocol/IDebugAdapter';
+import requests from '../../debugProtocol/requests';
 import { SocketMessageReader } from '../../jsonrpc/messageReader';
 import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 import { contentLength, CRLF } from '../../config';
@@ -54,7 +55,12 @@ class JavaProtocolServer {
 
   public registerRequestHandler() {
     this.commands.forEach((command) => {
-      this.webSocket.on(command.command, params => command.handle(command, params));
+      this.webSocket.on(requests.REQUEST, (params) => {
+        const deserialiParams = JSON.parse(params);
+        if (deserialiParams.arguments.command === command.command) {
+          command.handle(params);
+        }
+      });
     });
   }
 
@@ -62,21 +68,16 @@ class JavaProtocolServer {
 
   }
 
-  public initializeRequestHandler(command, params): void {
+  public initializeRequestHandler(type: requests, params): void {
     /* tslint:disable */
-    const request = JSON.stringify({
-      command,
-      arguments: params,
-      seq: this.seq++,
-      type: 'request',
-    });
+    const request = JSON.stringify(params);
     /* tslint:enable */
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
     this.messageWriter.write({
       jsonrpc: jsonrpc.join(''),
     });
-    this.logger.info(`Receive request: ${command}\r\nparams: ${jsonrpc.join('')}`);
+    this.logger.info(`Receive request: ${params.arguments.command}\r\nparams: ${jsonrpc.join('')}`);
   }
 
   public launchRequestHandler() {
