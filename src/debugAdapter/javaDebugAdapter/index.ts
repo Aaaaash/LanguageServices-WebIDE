@@ -59,7 +59,7 @@ class JavaProtocolServer {
       this.commands.forEach((command) => {
         if (deserialiParams.command === command.command) {
           this.logger.info(
-            `Receive ${requests.REQUEST}: ${deserialiParams.command}\r\nparams: ${params}`,
+            `Receive ${requests.REQUEST}`,
           );
           command.handle(requests.REQUEST, params);
         }
@@ -77,6 +77,7 @@ class JavaProtocolServer {
     /* tslint:enable */
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
+    this.logger.info(jsonrpc.join(''));
     this.messageWriter.write({
       jsonrpc: jsonrpc.join(''),
     });
