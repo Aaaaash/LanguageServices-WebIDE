@@ -107,6 +107,7 @@ class JavaLanguageServer implements ILanguageServer {
       '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=,quiet=y',
       '-Declipse.application=org.eclipse.jdt.ls.core.id1',
       '-Dosgi.bundles.defaultStartLevel=4',
+      '-Dlog.level=ALL',
       '-noverify',
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-jar',
