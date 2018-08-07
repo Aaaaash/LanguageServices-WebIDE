@@ -31,17 +31,16 @@ class JavaProtocolServer {
     });
 
     this.commands = [
-      { command: 'configurationDone', handle: this.configurationDoneRequestHandler },
-      { command: 'initialize', handle: this.initializeRequestHandler },
-      { command: 'launch', handle: this.launchRequestHandler },
-      { command: 'setBreakpoint', handle: this.setBreakpointRequestHandler },
+      { type: 'request', handle: this.requestHandler },
+      { type: 'response', handle: this.responseHandler },
+      { type: 'event', handle: this.eventHandler },
     ];
   }
 
   getPort = () => this.port;
 
   public start = () => {
-    this.registerRequestHandler();
+    this.registerMessageHandler();
     this.webSocket.emit('connect', 'success');
     // @TODO
   }
@@ -52,37 +51,33 @@ class JavaProtocolServer {
     // @TODO
   }
 
-  public registerRequestHandler() {
+  public registerMessageHandler() {
     this.webSocket.on('message', (params) => {
       const deserialiParams = JSON.parse(params);
-      this.commands.forEach((command) => {
-        if (deserialiParams.command === command.command) {
+      this.commands.forEach((handler) => {
+        if (deserialiParams.type === handler.type) {
           this.logger.info(
             `Receive ${requests.REQUEST}`,
           );
-          command.handle(params);
+          handler.handle(params);
         }
       });
     });
   }
 
-  public configurationDoneRequestHandler = () => {
-
-  }
-
-  public initializeRequestHandler = (request): void => {
+  public requestHandler = (request): void => {
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
     this.logger.info(jsonrpc.join(''));
     this.socket.write(jsonrpc.join(''));
   }
 
-  public launchRequestHandler = (request) => {
-    this.initializeRequestHandler(request);
+  public responseHandler = (response): void => {
+    // @TODO
   }
 
-  public setBreakpointRequestHandler = () => {
-
+  public eventHandler = (event): void => {
+    // @TODO
   }
 }
 
