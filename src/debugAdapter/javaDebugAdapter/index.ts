@@ -27,9 +27,12 @@ class JavaProtocolServer {
     this.messageReader = new SocketMessageReader(socket);
     this.messageWriter = new SocketMessageWriter(socket);
 
-    this.messageReader.listen((data) => {
-      this.logger.info(data.toString());
+    socket.on('data', (data) => {
+      console.log(data.toString());
     });
+    // this.messageReader.listen((data) => {
+    //   this.logger.info(data.toString());
+    // });
 
     this.commands = [
       { command: 'configurationDone', handle: this.configurationDoneRequestHandler },
@@ -61,7 +64,7 @@ class JavaProtocolServer {
           this.logger.info(
             `Receive ${requests.REQUEST}`,
           );
-          command.handle(requests.REQUEST, params);
+          command.handle(params);
         }
       });
     });
@@ -71,10 +74,7 @@ class JavaProtocolServer {
 
   }
 
-  public initializeRequestHandler = (type: requests, params): void => {
-    /* tslint:disable */
-    const request = JSON.stringify(params);
-    /* tslint:enable */
+  public initializeRequestHandler = (request): void => {
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
     this.logger.info(jsonrpc.join(''));
