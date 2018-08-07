@@ -54,13 +54,13 @@ class JavaProtocolServer {
   }
 
   public registerRequestHandler() {
-    this.commands.forEach((command) => {
-      this.webSocket.on(requests.REQUEST, (params) => {
-        const deserialiParams = JSON.parse(params);
+    this.webSocket.on('message', (params) => {
+      const deserialiParams = JSON.parse(params);
+      this.commands.forEach((command) => {
         if (deserialiParams.arguments.command === command.command) {
           command.handle(params);
           this.logger.info(
-            `Receive request: ${params.arguments.command}\r\nparams: ${params}`,
+            `Receive ${requests.REQUEST}: ${params.arguments.command}\r\nparams: ${params}`,
           );
         }
       });
