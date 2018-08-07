@@ -61,17 +61,17 @@ class JavaProtocolServer {
           this.logger.info(
             `Receive ${requests.REQUEST}: ${deserialiParams.command}\r\nparams: ${params}`,
           );
-          command.handle(params);
+          command.handle(requests.REQUEST, params);
         }
       });
     });
   }
 
-  public configurationDoneRequestHandler() {
+  public configurationDoneRequestHandler = () => {
 
   }
 
-  public initializeRequestHandler(type: requests, params): void {
+  public initializeRequestHandler = (type: requests, params): void => {
     /* tslint:disable */
     const request = JSON.stringify(params);
     /* tslint:enable */
@@ -82,11 +82,11 @@ class JavaProtocolServer {
     });
   }
 
-  public launchRequestHandler() {
+  public launchRequestHandler = () => {
 
   }
 
-  public setBreakpointRequestHandler() {
+  public setBreakpointRequestHandler = () => {
 
   }
 }
