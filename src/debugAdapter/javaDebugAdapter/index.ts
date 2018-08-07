@@ -57,11 +57,11 @@ class JavaProtocolServer {
     this.webSocket.on('message', (params) => {
       const deserialiParams = JSON.parse(params);
       this.commands.forEach((command) => {
-        if (deserialiParams.arguments.command === command.command) {
-          command.handle(params);
+        if (deserialiParams.command === command.command) {
           this.logger.info(
-            `Receive ${requests.REQUEST}: ${params.arguments.command}\r\nparams: ${params}`,
+            `Receive ${requests.REQUEST}: ${deserialiParams.command}\r\nparams: ${params}`,
           );
+          command.handle(params);
         }
       });
     });
