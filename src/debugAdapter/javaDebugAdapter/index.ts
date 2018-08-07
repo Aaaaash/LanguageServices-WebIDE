@@ -27,7 +27,7 @@ class JavaProtocolServer {
     this.messageReader = new SocketMessageReader(socket);
 
     this.messageReader.listen((data) => {
-      this.webSocket.send('message', JSON.stringify(data));
+      this.webSocket.emit('message', JSON.stringify(data));
     });
 
     this.commands = [
@@ -74,9 +74,7 @@ class JavaProtocolServer {
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
     this.logger.info(jsonrpc.join(''));
-    this.socket.write({
-      jsonrpc: jsonrpc.join(''),
-    });
+    this.socket.write(jsonrpc.join(''));
   }
 
   public launchRequestHandler = () => {
