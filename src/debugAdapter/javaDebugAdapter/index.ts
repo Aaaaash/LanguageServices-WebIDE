@@ -25,14 +25,10 @@ class JavaProtocolServer {
     public socket: net.Socket,
   ) {
     this.messageReader = new SocketMessageReader(socket);
-    // this.messageWriter = new SocketMessageWriter(socket);
 
-    socket.on('data', (data) => {
-      console.log(data.toString());
+    this.messageReader.listen((data) => {
+      this.webSocket.send('message', data);
     });
-    // this.messageReader.listen((data) => {
-    //   this.logger.info(data.toString());
-    // });
 
     this.commands = [
       { command: 'configurationDone', handle: this.configurationDoneRequestHandler },
