@@ -2,11 +2,11 @@ import * as net from 'net';
 import * as io from 'socket.io';
 import * as log4js from 'log4js';
 
-import JavaDebugAdapter from './JavaDebugAdapter';
-import IDebugAdapter from '../../debugProtocol/IDebugAdapter';
+// import JavaDebugAdapter from './JavaDebugAdapter';
+// import IDebugAdapter from '../../debugProtocol/IDebugAdapter';
 import requests from '../../debugProtocol/requests';
 import { SocketMessageReader } from '../../jsonrpc/messageReader';
-import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
+// import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 import { contentLength, CRLF } from '../../config';
 
 class JavaProtocolServer {
@@ -14,7 +14,7 @@ class JavaProtocolServer {
   public type: string = 'java';
 
   public messageReader: SocketMessageReader;
-  public messageWriter: SocketMessageWriter;
+  // public messageWriter: SocketMessageWriter;
 
   public commands: any[];
 
@@ -25,7 +25,7 @@ class JavaProtocolServer {
     public socket: net.Socket,
   ) {
     this.messageReader = new SocketMessageReader(socket);
-    this.messageWriter = new SocketMessageWriter(socket);
+    // this.messageWriter = new SocketMessageWriter(socket);
 
     socket.on('data', (data) => {
       console.log(data.toString());
@@ -78,7 +78,7 @@ class JavaProtocolServer {
     const length = Buffer.byteLength(request, 'utf-8');
     const jsonrpc = [contentLength, length, CRLF, CRLF, request];
     this.logger.info(jsonrpc.join(''));
-    this.messageWriter.write({
+    this.socket.write({
       jsonrpc: jsonrpc.join(''),
     });
   }
