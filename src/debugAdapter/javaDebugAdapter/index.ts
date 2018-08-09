@@ -2,11 +2,8 @@ import * as net from 'net';
 import * as io from 'socket.io';
 import * as log4js from 'log4js';
 
-// import JavaDebugAdapter from './JavaDebugAdapter';
-// import IDebugAdapter from '../../debugProtocol/IDebugAdapter';
 import requests from '../../debugProtocol/requests';
 import { SocketMessageReader } from '../../jsonrpc/messageReader';
-// import { SocketMessageWriter } from '../../jsonrpc/messageWriter';
 import { contentLength, CRLF } from '../../config';
 
 class JavaProtocolServer {
@@ -14,7 +11,6 @@ class JavaProtocolServer {
   public type: string = 'java';
 
   public messageReader: SocketMessageReader;
-  // public messageWriter: SocketMessageWriter;
 
   public commands: any[];
 
