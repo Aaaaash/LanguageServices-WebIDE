@@ -338,8 +338,9 @@ export class WebSocketMessageReader extends AbstractMessageReader
   }
 
   private processMessage(e: MessageEvent): void {
+    console.log(e);
+    console.log(JSON.parse(e.message));
     const message = JSON.parse(e.message);
-    console.log(message);
     if (this.callback) {
       this.callback(message);
     } else {
