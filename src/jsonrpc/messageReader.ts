@@ -103,7 +103,7 @@ class MessageBuffer {
 }
 
 export interface DataCallback {
-  (data: Message): void;
+  (data: any): void;
 }
 
 export interface PartialMessageInfo {
@@ -338,7 +338,8 @@ export class WebSocketMessageReader extends AbstractMessageReader
   }
 
   private processMessage(e: MessageEvent): void {
-    const message: Message = JSON.parse(e.message);
+    const message = JSON.parse(e.message);
+    console.log(message);
     if (this.callback) {
       this.callback(message);
     } else {
