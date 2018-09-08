@@ -29,21 +29,15 @@ class JavaLanguageServer implements ILanguageServer {
 
   public destroyed: boolean = false;
 
-  public protocolWebSocket: ProtocolWebSocket = null;
+  public websocketMessageReader: WebSocketMessageReader;
 
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
     this.servicesManager = LanguageServerManager.getInstance();
     this.logger.level = 'debug';
-    this.protocolWebSocket = {
-      readyState: this.socket.conn.readyState,
-      close: (code?: number, reason?: string) => this.socket.server.close,
-      send: this.socket.send,
-      addEventListener: this.socket.on,
-      removeEventListener: this.socket.removeListener,
-      OPEN: 'open',
-    };
+
+    this.websocketMessageReader = new WebSocketMessageReader(this.socket);
     socket.on('disconnect', this.dispose.bind(this));
   }
 
@@ -67,8 +61,7 @@ class JavaLanguageServer implements ILanguageServer {
 
   private startConversion () {
     const messageReader = new StreamMessageReader(this.process.stdout);
-    const webSocketMessageReader = new WebSocketMessageReader(this.socket);
-    webSocketMessageReader.listen((data) => {
+    this.websocketMessageReader.listen((data) => {
       this.logger.debug(data);
       this.process.stdin.write(data.jsonrpc);
     });

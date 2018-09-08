@@ -327,6 +327,7 @@ export class WebSocketMessageReader extends AbstractMessageReader
     super();
 
     socket.on("message", (e: MessageEvent) => {
+      console.log(e);
       try {
         this.processMessage(e);
       } catch (err) {
@@ -339,7 +340,6 @@ export class WebSocketMessageReader extends AbstractMessageReader
 
   private processMessage(e: MessageEvent): void {
     const message: Message = JSON.parse(e.data);
-    console.log(message);
     if (this.callback) {
       this.callback(message);
     } else {
