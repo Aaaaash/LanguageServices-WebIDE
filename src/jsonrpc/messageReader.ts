@@ -337,14 +337,11 @@ export class WebSocketMessageReader extends AbstractMessageReader
     socket.on("close", () => this.fireClose());
   }
 
-  private processMessage(e: MessageEvent): void {
-    console.log(e);
-    console.log(JSON.parse(e.message));
-    const message = JSON.parse(e.message);
+  private processMessage(e: any): void {
     if (this.callback) {
-      this.callback(message);
+      this.callback(e);
     } else {
-      this.pending.push(message);
+      this.pending.push(e);
     }
   }
 
