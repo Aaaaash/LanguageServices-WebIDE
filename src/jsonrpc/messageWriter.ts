@@ -1,6 +1,7 @@
 /* tslint:disable */
 import { ChildProcess } from 'child_process';
 import { Socket } from 'net';
+import * as io from 'socket.io';
 
 import { Message } from './messages';
 import { Event, Emitter } from './events';
@@ -219,9 +220,9 @@ export class IPCMessageWriter extends AbstractMessageWriter implements MessageWr
 export class WebSocketMessageWriter extends AbstractMessageWriter implements MessageWriter {
   private errorCount = 0
 
-  constructor(private socket: WebSocket) {
+  constructor(private socket: io.Socket) {
       super()
-      socket.addEventListener('close', () => this.fireClose())
+      socket.on('close', () => this.fireClose())
   }
 
   public write(message: Message): void {

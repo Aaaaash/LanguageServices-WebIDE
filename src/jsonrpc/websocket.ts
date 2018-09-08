@@ -1,3 +1,4 @@
+import * as io from 'socket.io';
 export interface MessageEvent {
   data: string;
 }
@@ -24,10 +25,10 @@ export interface WebSocket {
   readonly OPEN: string;
 }
 
-export function closeIfOpen(socket: WebSocket): void {
-  if (socket.readyState === socket.OPEN) {
+export function closeIfOpen(socket: io.Socket): void {
+  if (socket.conn.readyState === 'open') {
     // 1000 means normal closure. See
     // https://www.iana.org/assignments/websocket/websocket.xml#close-code-number.
-    socket.close(1000);
+    socket.server.close();
   }
 }

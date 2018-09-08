@@ -67,7 +67,7 @@ class JavaLanguageServer implements ILanguageServer {
 
   private startConversion () {
     const messageReader = new StreamMessageReader(this.process.stdout);
-    const webSocketMessageReader = new WebSocketMessageReader(this.protocolWebSocket);
+    const webSocketMessageReader = new WebSocketMessageReader(this.socket);
     webSocketMessageReader.listen((data) => {
       this.logger.debug(data);
       this.process.stdin.write(data.jsonrpc);

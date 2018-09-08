@@ -2,6 +2,7 @@
 
 import { Socket } from "net";
 import { ChildProcess } from "child_process";
+import * as io from 'socket.io';
 
 import { Message } from "./messages";
 import { Event, Emitter } from "./events";
@@ -322,18 +323,18 @@ export class WebSocketMessageReader extends AbstractMessageReader
   private pending: Message[] = [];
   private callback: DataCallback | null = null;
 
-  constructor(private socket: WebSocket) {
+  constructor(private socket: io.Socket) {
     super();
 
-    socket.addEventListener("message", (e: MessageEvent) => {
+    socket.on("message", (e: MessageEvent) => {
       try {
         this.processMessage(e);
       } catch (err) {
         this.fireError(err);
       }
     });
-    socket.addEventListener("error", err => this.fireError(err));
-    socket.addEventListener("close", () => this.fireClose());
+    socket.on("error", err => this.fireError(err));
+    socket.on("close", () => this.fireClose());
   }
 
   private processMessage(e: MessageEvent): void {
