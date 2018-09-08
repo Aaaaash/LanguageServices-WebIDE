@@ -1,16 +1,16 @@
 /* tslint:disable */
 
-import { Socket } from 'net';
-import { ChildProcess } from 'child_process';
+import { Socket } from "net";
+import { ChildProcess } from "child_process";
 
-import { Message } from './messages';
-import { Event, Emitter } from './events';
-import * as Is from '../utils/is';
-import { WebSocket, MessageEvent, closeIfOpen } from './websocket';
+import { Message } from "./messages";
+import { Event, Emitter } from "./events";
+import * as Is from "../utils/is";
+import { WebSocket, MessageEvent, closeIfOpen } from "./websocket";
 
 const DefaultSize: number = 8192;
-const CR: number = new Buffer("\r", 'ascii')[0];
-const LF: number = new Buffer("\n", 'ascii')[0];
+const CR: number = new Buffer("\r", "ascii")[0];
+const LF: number = new Buffer("\n", "ascii")[0];
 const CRLF: string = "\r\n";
 
 class MessageBuffer {
@@ -18,7 +18,7 @@ class MessageBuffer {
   private index: number;
   private buffer: Buffer;
 
-  constructor(encoding: string = 'utf8') {
+  constructor(encoding: string = "utf8") {
     this.encoding = encoding;
     this.index = 0;
     this.buffer = new Buffer(DefaultSize);
@@ -68,13 +68,7 @@ class MessageBuffer {
       return result;
     }
     result = Object.create(null);
-    const headers = this.buffer
-      .toString(
-        "ascii",
-        0,
-        current
-      )
-      .split(CRLF);
+    const headers = this.buffer.toString("ascii", 0, current).split(CRLF);
     headers.forEach(header => {
       const index: number = header.indexOf(":");
       if (index === -1) {
@@ -95,11 +89,7 @@ class MessageBuffer {
     if (this.index < length) {
       return null;
     }
-    const result = this.buffer.toString(
-      this.encoding,
-      0,
-      length
-    );
+    const result = this.buffer.toString(this.encoding, 0, length);
     const nextStart = length;
     this.buffer.copy(this.buffer, 0, nextStart);
     this.index = this.index - nextStart;
@@ -327,46 +317,48 @@ export class SocketMessageReader extends StreamMessageReader {
   }
 }
 
-export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
-  private pending: Message[] = []
-  private callback: DataCallback | null = null
+export class WebSocketMessageReader extends AbstractMessageReader
+  implements MessageReader {
+  private pending: Message[] = [];
+  private callback: DataCallback | null = null;
 
   constructor(private socket: WebSocket) {
-      super()
+    super();
 
-      socket.addEventListener('message', (e: MessageEvent) => {
-          try {
-              this.processMessage(e)
-          } catch (err) {
-              this.fireError(err)
-          }
-      })
-      socket.addEventListener('error', err => this.fireError(err))
-      socket.addEventListener('close', () => this.fireClose())
+    socket.addEventListener("message", (e: MessageEvent) => {
+      try {
+        this.processMessage(e);
+      } catch (err) {
+        this.fireError(err);
+      }
+    });
+    socket.addEventListener("error", err => this.fireError(err));
+    socket.addEventListener("close", () => this.fireClose());
   }
 
   private processMessage(e: MessageEvent): void {
-      const message: Message = JSON.parse(e.data)
-      if (this.callback) {
-          this.callback(message)
-      } else {
-          this.pending.push(message)
-      }
+    const message: Message = JSON.parse(e.data);
+    console.log(message);
+    if (this.callback) {
+      this.callback(message);
+    } else {
+      this.pending.push(message);
+    }
   }
 
   public listen(callback: DataCallback): void {
-      if (this.callback) {
-          throw new Error('callback is already set')
-      }
-      this.callback = callback
-      while (this.pending.length !== 0) {
-          callback(this.pending.pop()!)
-      }
+    if (this.callback) {
+      throw new Error("callback is already set");
+    }
+    this.callback = callback;
+    while (this.pending.length !== 0) {
+      callback(this.pending.pop()!);
+    }
   }
 
   public dispose(): void {
-      super.dispose()
-      this.callback = null
-      closeIfOpen(this.socket)
+    super.dispose();
+    this.callback = null;
+    closeIfOpen(this.socket);
   }
 }

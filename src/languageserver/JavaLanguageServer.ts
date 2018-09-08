@@ -40,7 +40,7 @@ class JavaLanguageServer implements ILanguageServer {
       readyState: this.socket.conn.readyState,
       close: (code?: number, reason?: string) => this.socket.server.close,
       send: this.socket.send,
-      addEventListener: this.socket.addListener,
+      addEventListener: this.socket.on,
       removeEventListener: this.socket.removeListener,
       OPEN: 'open',
     };
