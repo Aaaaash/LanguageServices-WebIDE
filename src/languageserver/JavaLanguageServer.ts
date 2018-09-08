@@ -7,7 +7,8 @@ import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } fr
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
-import { StreamMessageReader } from '../jsonrpc/messageReader';
+import { WebSocket as ProtocolWebSocket } from '../jsonrpc/websocket';
+import { StreamMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 
 class JavaLanguageServer implements ILanguageServer {
   private SERVER_HOME = 'lsp-java-server';
@@ -28,12 +29,21 @@ class JavaLanguageServer implements ILanguageServer {
 
   public destroyed: boolean = false;
 
+  public protocolWebSocket: ProtocolWebSocket = null;
+
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
     this.servicesManager = LanguageServerManager.getInstance();
     this.logger.level = 'debug';
-
+    this.protocolWebSocket = {
+      readyState: this.socket.conn.readyState,
+      close: (code?: number, reason?: string) => this.socket.server.close,
+      send: this.socket.send,
+      addEventListener: this.socket.addListener,
+      removeEventListener: this.socket.removeListener,
+      OPEN: 'open',
+    };
     socket.on('disconnect', this.dispose.bind(this));
   }
 
@@ -48,7 +58,7 @@ class JavaLanguageServer implements ILanguageServer {
     this.startConversion();
 
     this.process.on('exit', (code: number, signal: string) => {
-      this.logger.warn(`jdt.ls exit, code: ${code}, singnal: ${signal}.`);
+      this.logger.info(`jdt.ls exit, code: ${code}, singnal: ${signal}.`);
       this.dispose();
     });
 
@@ -57,8 +67,9 @@ class JavaLanguageServer implements ILanguageServer {
 
   private startConversion () {
     const messageReader = new StreamMessageReader(this.process.stdout);
-    this.socket.on('message', (data) => {
-      this.process.stdin.write(data.message);
+    const webSocketMessageReader = new WebSocketMessageReader(this.protocolWebSocket);
+    webSocketMessageReader.listen((data) => {
+      this.process.stdin.write(data.jsonrpc);
     });
 
     messageReader.listen((data) => {

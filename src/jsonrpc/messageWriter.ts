@@ -5,6 +5,7 @@ import { Socket } from 'net';
 import { Message } from './messages';
 import { Event, Emitter } from './events';
 import * as is from '../utils/is';
+import { WebSocket, closeIfOpen } from './websocket';
 
 let ContentLength: string = 'Content-Length: ';
 let CRLF = '\r\n';
@@ -23,6 +24,11 @@ export abstract class AbstractMessageWriter {
 	constructor() {
 		this.errorEmitter = new Emitter<[Error, Message, number]>();
 		this.closeEmitter = new Emitter<void>();
+	}
+
+	public dispose():void {
+		this.errorEmitter.dispose();
+		this.closeEmitter.dispose();
 	}
 
 	public get onError(): Event<[Error, Message, number]> {
@@ -208,3 +214,27 @@ export class IPCMessageWriter extends AbstractMessageWriter implements MessageWr
 		this.fireError(error, msg, this.errorCount);
 	}
 }
+
+
+export class WebSocketMessageWriter extends AbstractMessageWriter implements MessageWriter {
+  private errorCount = 0
+
+  constructor(private socket: WebSocket) {
+      super()
+      socket.addEventListener('close', () => this.fireClose())
+  }
+
+  public write(message: Message): void {
+      try {
+          this.socket.send(JSON.stringify(message))
+      } catch (err) {
+          this.fireError(err, message, ++this.errorCount)
+      }
+  }
+
+  public unsubscribe(): void {
+      super.dispose()
+      closeIfOpen(this.socket)
+  }
+}
+

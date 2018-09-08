@@ -6,6 +6,7 @@ import { ChildProcess } from 'child_process';
 import { Message } from './messages';
 import { Event, Emitter } from './events';
 import * as Is from '../utils/is';
+import { WebSocket, MessageEvent, closeIfOpen } from './websocket';
 
 const DefaultSize: number = 8192;
 const CR: number = new Buffer("\r", 'ascii')[0];
@@ -326,4 +327,46 @@ export class SocketMessageReader extends StreamMessageReader {
   }
 }
 
-// export class WebSocketMessageReader extends
+export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
+  private pending: Message[] = []
+  private callback: DataCallback | null = null
+
+  constructor(private socket: WebSocket) {
+      super()
+
+      socket.addEventListener('message', (e: MessageEvent) => {
+          try {
+              this.processMessage(e)
+          } catch (err) {
+              this.fireError(err)
+          }
+      })
+      socket.addEventListener('error', err => this.fireError(err))
+      socket.addEventListener('close', () => this.fireClose())
+  }
+
+  private processMessage(e: MessageEvent): void {
+      const message: Message = JSON.parse(e.data)
+      if (this.callback) {
+          this.callback(message)
+      } else {
+          this.pending.push(message)
+      }
+  }
+
+  public listen(callback: DataCallback): void {
+      if (this.callback) {
+          throw new Error('callback is already set')
+      }
+      this.callback = callback
+      while (this.pending.length !== 0) {
+          callback(this.pending.pop()!)
+      }
+  }
+
+  public dispose(): void {
+      super.dispose()
+      this.callback = null
+      closeIfOpen(this.socket)
+  }
+}
