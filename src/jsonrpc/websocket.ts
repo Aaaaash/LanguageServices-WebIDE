@@ -1,6 +1,6 @@
 import * as io from 'socket.io';
 export interface MessageEvent {
-  data: string;
+  message: string;
 }
 
 export interface WebSocketEventMap {
