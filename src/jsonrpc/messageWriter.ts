@@ -225,9 +225,9 @@ export class WebSocketMessageWriter extends AbstractMessageWriter implements Mes
       socket.on('close', () => this.fireClose())
   }
 
-  public write(message: Message): void {
+  public write(message: any): void {
       try {
-          this.socket.send(JSON.stringify(message))
+          this.socket.send(message)
       } catch (err) {
           this.fireError(err, message, ++this.errorCount)
       }

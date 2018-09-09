@@ -9,6 +9,7 @@ import { IExecutable, ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
 import { WebSocket as ProtocolWebSocket } from '../jsonrpc/websocket';
 import { StreamMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
+import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
 
 class JavaLanguageServer implements ILanguageServer {
   private SERVER_HOME = 'lsp-java-server';
@@ -30,6 +31,7 @@ class JavaLanguageServer implements ILanguageServer {
   public destroyed: boolean = false;
 
   public websocketMessageReader: WebSocketMessageReader;
+  public websocketMessageWriter: WebSocketMessageWriter;
 
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
@@ -38,6 +40,7 @@ class JavaLanguageServer implements ILanguageServer {
     this.logger.level = 'debug';
 
     this.websocketMessageReader = new WebSocketMessageReader(this.socket);
+    this.websocketMessageWriter = new WebSocketMessageWriter(this.socket);
     socket.on('disconnect', this.dispose.bind(this));
   }
 
@@ -74,7 +77,7 @@ class JavaLanguageServer implements ILanguageServer {
         CRLF,
         CRLF,
       ];
-      this.socket.send({ data: `${headers.join('')}${jsonrpcData}` });
+      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
     });
   }
 
