@@ -88,7 +88,7 @@ socket.on('error', (err) => {
 });
 
 server.listen(PORT, () => {
-  logger.info('Web Server start in 9988 port!');
+  logger.info(`Web Server start in ${PORT} port!`);
 });
 
 process.on('uncaughtException', (err) => {

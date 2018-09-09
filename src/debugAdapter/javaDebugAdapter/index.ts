@@ -7,7 +7,7 @@ import { SocketMessageReader } from '../../jsonrpc/messageReader';
 import { contentLength, CRLF } from '../../config';
 
 class JavaProtocolServer {
-  private logger: log4js.Logger = log4js.getLogger('JavaProtocolServer');
+  private logger: log4js.Logger = log4js.getLogger('JavaDebugServer');
   public type: string = 'java';
 
   public messageReader: SocketMessageReader;
