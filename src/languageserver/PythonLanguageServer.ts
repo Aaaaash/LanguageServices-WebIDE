@@ -8,9 +8,10 @@ import { contentLength, CRLF } from '../config';
 import { ILanguageServer, IDispose, IExecutable } from '../types';
 import findPylsHome from '../utils/findPylsHome';
 import findUselessPort from '../utils/findUselessPort';
-import { SocketMessageReader } from '../jsonrpc/messageReader';
+import { SocketMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 import LanguageServerManager from '../LanguageServerManager';
 import { LANGUAGE_STATUS } from '../protocol';
+import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
 
 enum ClientState {
   Initial = 'Initial',
@@ -56,6 +57,9 @@ class PythonLanguageServer implements ILanguageServer {
 
   public destroyed: boolean = false;
 
+  public websocketMessageReader: WebSocketMessageReader;
+  public websocketMessageWriter: WebSocketMessageWriter;
+
   constructor(spaceKey: string, socket: io.Socket) {
     this.spaceKey = spaceKey;
     this.socket = socket;
@@ -63,15 +67,16 @@ class PythonLanguageServer implements ILanguageServer {
     this.logger.level = 'debug';
 
     socket.on('disconnect', this.dispose);
-    socket.on('disconnecting', this.dispose);
 
-    socket.on('message', (data) => {
+    this.websocketMessageReader = new WebSocketMessageReader(socket);
+    this.websocketMessageWriter = new WebSocketMessageWriter(socket);
+
+    this.websocketMessageReader.listen((data) => {
       this.messageQueue.push(data.message);
       if (this.connected) {
         this.sendMessageFromQueue();
       }
     });
-
   }
 
   private async initPythonTcpServer() {
@@ -148,7 +153,7 @@ class PythonLanguageServer implements ILanguageServer {
       CRLF,
       CRLF,
     ];
-    this.socket.send({
+    this.websocketMessageWriter.write({
       data: `${header.join('')}${status}`,
     });
   }
@@ -172,7 +177,7 @@ class PythonLanguageServer implements ILanguageServer {
         CRLF,
       ];
 
-      this.socket.send({ data: `${headers.join('')}${jsonrpcData}` });
+      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
     });
   }
 
