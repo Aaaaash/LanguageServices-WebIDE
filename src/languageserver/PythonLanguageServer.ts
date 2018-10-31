@@ -23,27 +23,21 @@ enum ClientState {
   Stopped = 'Stopped',
 }
 
-class PythonLanguageServer implements ILanguageServer {
+class PythonLanguageServer extends ILanguageServer {
 
   private SERVER_HOME = 'lsp-python-server';
 
   public type = Symbol('python');
 
-  private logger: log4js.Logger = log4js.getLogger('PythonLanguageServer');
-
   private executable: IExecutable;
 
-  private process: cp.ChildProcess;
+  public process: cp.ChildProcess;
 
-  private serviceManager: LanguageServerManager;
-
-  private spaceKey: string;
-
-  private socket: io.Socket;
+  public serviceManager: LanguageServerManager;
 
   private port: number;
 
-  private tcpSocket: net.Socket;
+  public tcpSocket: net.Socket;
 
   private messageQueue: string[] = [];
 
@@ -51,22 +45,16 @@ class PythonLanguageServer implements ILanguageServer {
 
   private messageReader: SocketMessageReader;
 
-  /* tslint:disable */
-  private _interval: NodeJS.Timer;
-  /* tslint:enable */
-
   public destroyed: boolean = false;
 
   public websocketMessageReader: WebSocketMessageReader;
   public websocketMessageWriter: WebSocketMessageWriter;
 
-  constructor(spaceKey: string, socket: io.Socket) {
-    this.spaceKey = spaceKey;
-    this.socket = socket;
-    this.serviceManager = LanguageServerManager.getInstance();
+  constructor(public spaceKey: string, private socket: io.Socket) {
+    super(spaceKey, LanguageServerManager.getInstance());
     this.logger.level = 'debug';
 
-    socket.on('disconnect', this.dispose);
+    this.socket.on('disconnect', this.dispose);
 
     this.websocketMessageReader = new WebSocketMessageReader(socket);
     this.websocketMessageWriter = new WebSocketMessageWriter(socket);

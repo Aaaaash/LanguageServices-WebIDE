@@ -11,20 +11,12 @@ import { WebSocket as ProtocolWebSocket } from '../jsonrpc/websocket';
 import { StreamMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
 
-class JavaLanguageServer implements ILanguageServer {
+class JavaLanguageServer extends ILanguageServer {
   private SERVER_HOME = 'lsp-java-server';
 
   public type = Symbol('java');
 
-  private logger: log4js.Logger = log4js.getLogger('JavaLanguageServer');
-
   private executable: IExecutable;
-
-  private process: cp.ChildProcess;
-
-  private servicesManager: LanguageServerManager;
-
-  private spaceKey: string;
 
   private socket: io.Socket;
 
@@ -34,9 +26,8 @@ class JavaLanguageServer implements ILanguageServer {
   public websocketMessageWriter: WebSocketMessageWriter;
 
   constructor(spaceKey: string, socket: io.Socket) {
-    this.spaceKey = spaceKey;
+    super(spaceKey, LanguageServerManager.getInstance());
     this.socket = socket;
-    this.servicesManager = LanguageServerManager.getInstance();
     this.logger.level = 'debug';
 
     this.websocketMessageReader = new WebSocketMessageReader(this.socket);
@@ -79,13 +70,6 @@ class JavaLanguageServer implements ILanguageServer {
       ];
       this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
     });
-  }
-
-  public dispose = () => {
-    this.destroyed = true;
-    this.logger.info(`${this.spaceKey} is disconnect.`);
-    this.servicesManager.dispose(this.spaceKey);
-    this.process.kill();
   }
 
   private prepareParams() {
