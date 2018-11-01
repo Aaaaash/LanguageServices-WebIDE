@@ -1,6 +1,5 @@
 import * as cp from 'child_process';
 import * as io from 'socket.io';
-import * as log4js from 'log4js';
 import * as net from 'net';
 import * as kill from 'tree-kill';
 

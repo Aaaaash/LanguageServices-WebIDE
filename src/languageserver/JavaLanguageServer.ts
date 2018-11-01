@@ -1,7 +1,6 @@
 import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as glob from 'glob';
-import * as log4js from 'log4js';
 
 import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
 import findJavaHome from '../utils/findJavaHome';
