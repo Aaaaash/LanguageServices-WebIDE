@@ -5,13 +5,14 @@ import * as log4js from 'log4js';
 
 import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
 import findJavaHome from '../utils/findJavaHome';
-import { IExecutable, ILanguageServer, IDispose } from '../types';
+import { IExecutable, IDispose } from '../types';
+import AbstractLanguageServer from './AbstractLanguageServer';
 import LanguageServerManager from '../LanguageServerManager';
 import { WebSocket as ProtocolWebSocket } from '../jsonrpc/websocket';
 import { StreamMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
 
-class JavaLanguageServer extends ILanguageServer {
+class JavaLanguageServer extends AbstractLanguageServer {
   private SERVER_HOME = 'lsp-java-server';
 
   public type = Symbol('java');
@@ -26,10 +27,8 @@ class JavaLanguageServer extends ILanguageServer {
   public websocketMessageWriter: WebSocketMessageWriter;
 
   constructor(spaceKey: string, socket: io.Socket) {
-    super(spaceKey, LanguageServerManager.getInstance());
+    super(spaceKey, JavaLanguageServer.name, LanguageServerManager.getInstance());
     this.socket = socket;
-    this.logger.level = 'debug';
-
     this.websocketMessageReader = new WebSocketMessageReader(this.socket);
     this.websocketMessageWriter = new WebSocketMessageWriter(this.socket);
     socket.on('disconnect', this.dispose.bind(this));

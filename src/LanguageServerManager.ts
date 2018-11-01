@@ -1,10 +1,10 @@
 import * as log4js from 'log4js';
 
-import { ILanguageServer, IDispose } from './types';
-
+import { IDispose } from './types';
+import AbstractLanguageServer from './languageserver/AbstractLanguageServer';
 type IServices = {
   spaceKey: string;
-  server: ILanguageServer;
+  server: AbstractLanguageServer;
   dispose: Promise<IDispose>;
 };
 

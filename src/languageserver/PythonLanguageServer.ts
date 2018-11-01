@@ -5,8 +5,9 @@ import * as net from 'net';
 import * as kill from 'tree-kill';
 
 import { contentLength, CRLF } from '../config';
-import { ILanguageServer, IDispose, IExecutable } from '../types';
+import { IDispose, IExecutable } from '../types';
 import findPylsHome from '../utils/findPylsHome';
+import AbstractLanguageServer from './AbstractLanguageServer';
 import findUselessPort from '../utils/findUselessPort';
 import { SocketMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 import LanguageServerManager from '../LanguageServerManager';
@@ -23,7 +24,7 @@ enum ClientState {
   Stopped = 'Stopped',
 }
 
-class PythonLanguageServer extends ILanguageServer {
+class PythonLanguageServer extends AbstractLanguageServer {
 
   private SERVER_HOME = 'lsp-python-server';
 
@@ -51,8 +52,7 @@ class PythonLanguageServer extends ILanguageServer {
   public websocketMessageWriter: WebSocketMessageWriter;
 
   constructor(public spaceKey: string, private socket: io.Socket) {
-    super(spaceKey, LanguageServerManager.getInstance());
-    this.logger.level = 'debug';
+    super(spaceKey, PythonLanguageServer.name, LanguageServerManager.getInstance());
 
     this.socket.on('disconnect', this.dispose);
 
