@@ -8,3 +8,6 @@ repository
 pyls
 .idea
 com.microsoft.java.debug.plugin-0.10.0.jar
+src/utils/bin
+src/utils/debugAdapters
+src/utils/LLVM

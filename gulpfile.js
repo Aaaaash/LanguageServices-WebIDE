@@ -31,6 +31,15 @@ gulp.task("install-py-server", () => {
   });
 });
 
+gulp.task("install-ts-server", () => {
+  cp.exec('tsserver', (err) => {
+    if (err) {
+      cp.execSync("sudo npm install typescript -g", { stdio: [0, 1, 2] })
+    }
+    process.stdout.write('ts-server is existed.\n');
+  })
+})
+
 gulp.task('build_debug_server', () => {
 	cp.execSync(mvnw() + ' clean package', {
 		cwd: server_dir,
