@@ -1,168 +1,80 @@
-/**
- * 运行时依赖
- * "runtimeDependencies": [
-    {
-      "description": "C/C++ language components (Linux / x86_64)",
-      "url": "https://go.microsoft.com/fwlink/?linkid=2037608",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86_64"
-      ],
-      "binaries": [
-        "./bin/Microsoft.VSCode.CPP.Extension.linux",
-        "./bin/Microsoft.VSCode.CPP.IntelliSense.Msvc.linux"
-      ]
-    },
-    {
-      "description": "C/C++ language components (Linux / x86)",
-      "url": "https://go.microsoft.com/fwlink/?linkid=2037526",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86",
-        "i686",
-        "i386"
-      ],
-      "binaries": [
-        "./bin/Microsoft.VSCode.CPP.Extension.linux",
-        "./bin/Microsoft.VSCode.CPP.IntelliSense.Msvc.linux"
-      ]
-    },
-    {
-      "description": "C/C++ language components (OS X)",
-      "url": "https://go.microsoft.com/fwlink/?linkid=2037527",
-      "platforms": [
-        "darwin"
-      ],
-      "binaries": [
-        "./bin/Microsoft.VSCode.CPP.Extension.darwin",
-        "./bin/Microsoft.VSCode.CPP.IntelliSense.Msvc.darwin"
-      ]
-    },
-    {
-      "description": "C/C++ language components (Windows)",
-      "url": "https://go.microsoft.com/fwlink/?linkid=2037609",
-      "platforms": [
-        "win32"
-      ],
-      "binaries": []
-    },
-    {
-      "description": "ClangFormat (Linux / x86_64)",
-      "url": "https://go.microsoft.com/fwlink/?LinkID=872607",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86_64"
-      ],
-      "binaries": [
-        "./LLVM/bin/clang-format"
-      ]
-    },
-    {
-      "description": "ClangFormat (Linux / x86)",
-      "url": "https://go.microsoft.com/fwlink/?LinkID=872608",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86",
-        "i686",
-        "i386"
-      ],
-      "binaries": [
-        "./LLVM/bin/clang-format"
-      ]
-    },
-    {
-      "description": "ClangFormat (OS X)",
-      "url": "https://go.microsoft.com/fwlink/?LinkID=872609",
-      "platforms": [
-        "darwin"
-      ],
-      "binaries": [
-        "./LLVM/bin/clang-format.darwin"
-      ]
-    },
-    {
-      "description": "ClangFormat (Windows)",
-      "url": "https://go.microsoft.com/fwlink/?LinkID=872610",
-      "platforms": [
-        "win32"
-      ],
-      "binaries": []
-    },
-    {
-      "description": "Mono Framework Assemblies",
-      "url": "https://go.microsoft.com/fwlink/?LinkId=2027135",
-      "platforms": [
-        "linux",
-        "darwin"
-      ],
-      "binaries": []
-    },
-    {
-      "description": "Mono Runtime (Linux / x86)",
-      "url": "https://go.microsoft.com/fwlink/?LinkId=2027410",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86",
-        "i686",
-        "i386"
-      ],
-      "binaries": [
-        "./debugAdapters/mono.linux-x86"
-      ]
-    },
-    {
-      "description": "Mono Runtime (Linux / x86_64)",
-      "url": "https://go.microsoft.com/fwlink/?LinkId=2027416",
-      "platforms": [
-        "linux"
-      ],
-      "architectures": [
-        "x86_64"
-      ],
-      "binaries": [
-        "./debugAdapters/mono.linux-x86_64"
-      ]
-    },
-    {
-      "description": "Mono Runtime (OS X)",
-      "url": "https://go.microsoft.com/fwlink/?LinkId=2027403",
-      "platforms": [
-        "darwin"
-      ],
-      "binaries": [
-        "./debugAdapters/mono.osx"
-      ]
-    },
-    {
-      "description": "LLDB 3.8.0 (OS X)",
-      "url": "https://go.microsoft.com/fwlink/?LinkID=817244",
-      "platforms": [
-        "darwin"
-      ],
-      "binaries": [
-        "./debugAdapters/lldb/bin/debugserver",
-        "./debugAdapters/lldb/bin/lldb-mi",
-        "./debugAdapters/lldb/bin/lldb-argdumper",
-        "./debugAdapters/lldb/bin/lldb-launcher"
-      ]
-    },
-    {
-      "description": "Visual Studio Windows Debugger",
-      "url": "https://go.microsoft.com/fwlink/?linkid=872985",
-      "platforms": [
-        "win32"
-      ],
-      "binaries": []
+import * as cp from 'child_process';
+import * as io from 'socket.io';
+
+import AbstractLanguageServer from './AbstractLanguageServer';
+import { contentLength, CRLF } from '../config';
+import { IExecutable, IDispose } from '../types';
+import LanguageServerManager from '../LanguageServerManager';
+import { WebSocketMessageReader } from '../jsonrpc/messageReader';
+import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
+import findCppLanguageSercerHome from '../utils/findCppLanguageSercerHome';
+import { StreamMessageReader } from 'vscode-jsonrpc';
+
+class CppLanguageServer extends AbstractLanguageServer {
+  private SERVER_HOME = 'cppRuntimeDependencies';
+  public type = Symbol('cpp');
+  private socket: io.Socket;
+  private executeable: IExecutable;
+
+  public websocketMessageReader: WebSocketMessageReader;
+  public websocketMessageWriter: WebSocketMessageWriter;
+  constructor(spaceKey: string, socket: io.Socket) {
+    super(spaceKey, CppLanguageServer.name, LanguageServerManager.getInstance());
+    this.socket = socket;
+    this.websocketMessageReader = new WebSocketMessageReader(this.socket);
+    this.websocketMessageWriter = new WebSocketMessageWriter(this.socket);
+    socket.on('disconnect', this.dispose.bind(this));
+  }
+
+  public async start(): Promise<IDispose> {
+    const cppServerModule = this.prepareExecutable();
+    this.logger.info(`Cpp Executable is ready.`);
+
+    this.logger.info(`command: ${cppServerModule}`);
+    try {
+      this.process = cp.spawn(cppServerModule);
+      this.logger.info('Cpp Language Servcer is running.');
+
+      this.startCoversion();
+
+      this.process.on('exit', (code: number, signal: string) => {
+        this.logger.info(`Cpp lsp is exit, code: ${code}, signal: ${signal}`);
+        this.dispose();
+      });
+      return Promise.resolve(this.dispose);
+    } catch (err) {
+      this.logger.error(`
+        Start LLVM failed, reason: ${err.message}
+        ${err.stack}
+      `);
     }
-  ]
- */
+  }
+
+  private startCoversion() {
+    const messageReader = new StreamMessageReader(this.process.stdout);
+    this.websocketMessageReader.listen((data) => {
+      this.process.stdin.write(data.message);
+    });
+
+    messageReader.listen((data) => {
+      console.log(data);
+      const jsonrpcData = JSON.stringify(data);
+      const length = Buffer.byteLength(jsonrpcData, 'utf-8');
+      const headers: string[] = [
+        contentLength,
+        length.toString(),
+        CRLF,
+        CRLF,
+      ];
+      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
+    });
+  }
+
+  prepareExecutable() {
+    const cppServerModule = findCppLanguageSercerHome();
+    console.log(cppServerModule);
+    return cppServerModule;
+  }
+}
+
+export default CppLanguageServer;

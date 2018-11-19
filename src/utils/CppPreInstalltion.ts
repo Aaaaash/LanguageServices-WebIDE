@@ -9,7 +9,7 @@ import * as yauzl from 'yauzl';
 import * as mkdirp from 'mkdirp';
 import { IncomingMessage, ClientRequest } from 'http';
 
-import checkInstallLockFile, { checkFileExists } from './checkInstallLockFile';
+import checkInstallLockFile, { checkFileExists, touchLockFile } from './checkInstallLockFile';
 import getPlatformInfomation from './getPlatformInfomation';
 import cppRuntimeDependencies from './cppRuntimeDependencies';
 
@@ -65,8 +65,8 @@ export class PackageManagerWebResponseError extends PackageManagerError {
   }
 }
 
-function getExtensionFilePath(extensionfile: string): string {
-  return path.resolve(__dirname, extensionfile);
+export function getExtensionFilePath(extensionfile: string): string {
+  return path.resolve(__dirname, `../cppRuntimeDependencies/${extensionfile}`);
 }
 
 function getPackages(info: PlatformInfomation): Promise<any> {
@@ -499,12 +499,14 @@ async function onlineInstalltion() {
     try {
       logger.info('Get platform infomation.');
       const platformInfomation: PlatformInfomation = await getPlatformInfomation();
+      /* tslint:disable */
+      logger.info(`Platform infomation: ${platformInfomation.platform}-${platformInfomation.architecture}`);
+      /* tslint:enable */
+      await downloadAndInstallPackages(platformInfomation);
 
-      logger.info(`
-      Platform infomation: ${platformInfomation.platform}-${platformInfomation.architecture}
-      `);
-      downloadAndInstallPackages(platformInfomation);
-
+      logger.info('Touch InstallLockFile');
+      touchLockFile();
+      logger.info('Cpp runtime dependencies install success.');
     } catch (error) {
       logger.error(`Cpp runtime dependencies install failed, reason: ${error.message}`);
     }

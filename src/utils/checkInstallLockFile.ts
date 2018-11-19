@@ -14,9 +14,21 @@ export function checkFileExists(filePath: string): Promise<boolean> {
 }
 
 export function getInstallLockPath(): string {
-  return path.resolve(__dirname, 'install.lock');
+  return path.resolve(__dirname, '../../install.lock');
 }
 
 export default function checkInstallLockFile(): Promise<boolean> {
   return checkFileExists(getInstallLockPath());
+}
+
+export function touchLockFile() {
+  return new Promise<void>((resolve, reject) => {
+    fs.writeFile(getInstallLockPath(), '', (err) => {
+      if (err) {
+        reject(err);
+      }
+
+      resolve();
+    });
+  });
 }
