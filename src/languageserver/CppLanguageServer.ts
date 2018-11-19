@@ -57,7 +57,6 @@ class CppLanguageServer extends AbstractLanguageServer {
     });
 
     messageReader.listen((data) => {
-      console.log(data);
       const jsonrpcData = JSON.stringify(data);
       const length = Buffer.byteLength(jsonrpcData, 'utf-8');
       const headers: string[] = [
@@ -72,7 +71,6 @@ class CppLanguageServer extends AbstractLanguageServer {
 
   prepareExecutable() {
     const cppServerModule = findCppLanguageSercerHome();
-    console.log(cppServerModule);
     return cppServerModule;
   }
 }
