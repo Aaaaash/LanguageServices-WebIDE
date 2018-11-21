@@ -32,7 +32,7 @@ class CppLanguageServer extends AbstractLanguageServer {
 
     this.logger.info(`command: ${cppServerModule}`);
     try {
-      this.process = cp.spawn(cppServerModule);
+      this.process = cp.spawn(cppServerModule, [], {});
       this.logger.info('Cpp Language Servcer is running.');
 
       this.startCoversion();
