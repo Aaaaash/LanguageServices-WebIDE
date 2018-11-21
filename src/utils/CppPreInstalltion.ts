@@ -66,7 +66,7 @@ export class PackageManagerWebResponseError extends PackageManagerError {
 }
 
 export function getExtensionFilePath(extensionfile: string): string {
-  return path.resolve(__dirname, `../cppRuntimeDependencies/${extensionfile}`);
+  return path.resolve(__dirname, `../../cppRuntimeDependencies/${extensionfile}`);
 }
 
 function getPackages(info: PlatformInfomation): Promise<any> {
