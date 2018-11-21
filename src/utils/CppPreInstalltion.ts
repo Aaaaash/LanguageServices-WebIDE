@@ -504,9 +504,9 @@ async function postInstall() {
 
 function setPermissions(platform: string) {
   return new Promise((resolve) => {
-    cp.execSync(`chmod 777 ${getExtensionFilePath(`Microsoft.VSCode.CPP.Extension.${platform}`)}`);
     /* tslint:disable */
-    cp.execSync(`chmod 777 ${getExtensionFilePath(`Microsoft.VSCode.CPP.IntelliSense.Msvc.${platform}`)}`);
+    cp.execSync(`chmod 777 ${getExtensionFilePath(`bin/Microsoft.VSCode.CPP.Extension.${platform}`)}`);
+    cp.execSync(`chmod 777 ${getExtensionFilePath(`bin/Microsoft.VSCode.CPP.IntelliSense.Msvc.${platform}`)}`);
     /* tslint:enable */
     resolve(true);
   });
