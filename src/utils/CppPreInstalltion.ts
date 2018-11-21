@@ -1,3 +1,4 @@
+import * as cp from 'child_process';
 import * as log4js from 'log4js';
 import * as path from 'path';
 import * as tmp from 'tmp';
@@ -7,6 +8,7 @@ import * as fs from 'fs';
 import * as net from 'net';
 import * as yauzl from 'yauzl';
 import * as mkdirp from 'mkdirp';
+import * as copydir from 'copy-dir';
 import { IncomingMessage, ClientRequest } from 'http';
 
 import checkInstallLockFile, { checkFileExists, touchLockFile } from './checkInstallLockFile';
@@ -481,6 +483,35 @@ async function installPackages(info) {
     });
 }
 
+async function postInstall() {
+  logger.info('Copy msvc config file to cppRuntimeDependencies directory');
+  return new Promise((resolve, reject) => {
+    copydir(
+      path.resolve(__dirname, '../../msvc/'),
+      path.resolve(__dirname, '../../cppRuntimeDependencies/bin/'),
+      (err) => {
+        if (err) {
+          logger.error(`Copy failed, ${err.message}`);
+          reject(false);
+        } else {
+          logger.info(`Copy done.`);
+          resolve(true);
+        }
+      },
+    );
+  });
+}
+
+function setPermissions(platform: string) {
+  return new Promise((resolve) => {
+    cp.execSync(`chmod 777 ${getExtensionFilePath(`Microsoft.VSCode.CPP.Extension.${platform}`)}`);
+    /* tslint:disable */
+    cp.execSync(`chmod 777 ${getExtensionFilePath(`Microsoft.VSCode.CPP.IntelliSense.Msvc.${platform}`)}`);
+    /* tslint:enable */
+    resolve(true);
+  });
+}
+
 async function downloadAndInstallPackages(info: PlatformInfomation) {
   console.log('******************************START DOWNLOAD PACKAGES*****************************');
   await downloadPackages(info);
@@ -488,7 +519,9 @@ async function downloadAndInstallPackages(info: PlatformInfomation) {
 
   console.log('******************************START INSTALL PACKAGES*****************************');
   await installPackages(info);
-  // @ TODO
+  console.log(info);
+  await postInstall();
+  await setPermissions(info.platform);
   console.log('******************************INSTALL PACKAGES DONE******************************');
 }
 

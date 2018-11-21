@@ -24,6 +24,7 @@
     "tslint"
   ],
   "dependencies": {
+    "copy-dir": "^0.4.0",
     "lodash": "^4.17.10",
     "log4js": "^2.11.0",
     "mkdirp": "^0.5.1",
