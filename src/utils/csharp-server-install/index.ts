@@ -255,9 +255,9 @@ async function doOfflinePackage(
 
 async function install() {
   const packages = [
-    // new PlatformInformation('win32', 'x86_64'),
+    new PlatformInformation('win32', 'x86_64'),
     new PlatformInformation('darwin', 'x86_64'),
-    // new PlatformInformation('linux', 'x86_64')
+    new PlatformInformation('linux', 'x86_64')
   ];
 
   const name = 'csharp';

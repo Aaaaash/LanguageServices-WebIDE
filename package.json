@@ -6,7 +6,7 @@
   "scripts": {
     "prepare:env": "./node_modules/.bin/gulp download-java-server && ./node_modules/.bin/gulp install-py-server",
     "start": "export NODE_ENV=prod && node out/main.js",
-    "dev": "export NODE_ENV=dev && ts-node src/main.ts",
+    "dev": "export NODE_ENV=dev && nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' src/main.ts",
     "clean:build": "rm -rf out",
     "build": "npm run clean:build && tsc -p .",
     "pretest": "rm -rf __test__ && tsc -p test/",
@@ -29,7 +29,9 @@
     "log4js": "^2.11.0",
     "minimist": "^1.2.0",
     "node-filter-async": "^1.0.1",
+    "remove-bom-buffer": "^3.0.0",
     "socket.io": "^2.1.1",
+    "strip-bom": "^3.0.0",
     "tree-kill": "^1.2.0",
     "vscode": "^1.1.17",
     "vscode-debugprotocol": "^1.31.0",

@@ -4469,6 +4469,14 @@ release-zalgo@^1.0.0:
   dependencies:
     es6-error "^4.0.1"
 
+remove-bom-buffer@^3.0.0:
+  version "3.0.0"
+  resolved "http://registry.npm.taobao.org/remove-bom-buffer/download/remove-bom-buffer-3.0.0.tgz#c2bf1e377520d324f623892e33c10cac2c252b53"
+  integrity sha1-wr8eN3Ug0yT2I4kuM8EMrCwlK1M=
+  dependencies:
+    is-buffer "^1.1.5"
+    is-utf8 "^0.2.1"
+
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
   resolved "http://registry.npm.taobao.org/remove-trailing-separator/download/remove-trailing-separator-1.1.0.tgz#c24bce2a283adad5bc3f58e0d48249b92379d8ef"
@@ -5106,6 +5114,7 @@ strip-bom@^2.0.0:
 strip-bom@^3.0.0:
   version "3.0.0"
   resolved "http://registry.npm.taobao.org/strip-bom/download/strip-bom-3.0.0.tgz#2334c18e9c759f7bdd56fdef7e9ae3d588e68ed3"
+  integrity sha1-IzTBjpx1n3vdVv3vfprj1YjmjtM=
 
 strip-dirs@^2.0.0:
   version "2.1.0"
