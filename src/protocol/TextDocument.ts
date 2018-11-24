@@ -18,9 +18,63 @@ export function applyEdits(before: string, edits: lsp.TextEdit[]): string {
   return currentDoc + before.substr(offset);
 }
 
+export function getPosition(offset: number): lsp.Position {
+  if (offset > this.text.length) {
+    throw new Error('offset ' + offset + ' is out of bounds.');
+  }
+  const lines = this.lines;
+  let currentOffSet = 0;
+  for (let i = 0; i < lines.length; i += 1) {
+    const l =  lines[i];
+    if (currentOffSet + l.length + 1 > offset) {
+      return {
+        line: i,
+        character: offset - currentOffSet,
+      };
+      /* tslint:disable */
+    } else {
+      /* tslint:enable */
+      currentOffSet += l.length + 1;
+    }
+  }
+  throw new Error('Programming Error.');
+}
+
+
 /* tslint:disable */
 export interface Line {
   text: string;
+}
+
+export interface FileBasedRequest {
+  FileName: string;
+}
+
+export interface LinePositionSpanTextChange {
+  NewText: string;
+  StartLine: number;
+  StartColumn: number;
+  EndLine: number;
+  EndColumn: number;
+}
+
+export interface Request extends FileBasedRequest {
+  Line?: number;
+  Column?: number;
+  Buffer?: string;
+  Changes?: LinePositionSpanTextChange[];
+}
+
+
+export interface AutoCompleteRequest extends Request {
+  WordToComplete: string;
+  WantDocumentationForEveryCompletionResult?: boolean;
+  WantImportableTypes?: boolean;
+  WantMethodHeader?: boolean;
+  WantSnippet?: boolean;
+  WantReturnType?: boolean;
+  WantKind?: boolean;
+  TriggerCharacter?: string;
 }
 
 export class LspDocument {
@@ -124,4 +178,97 @@ export class LspDocument {
   async save(): Promise<void> {
     // TODO sync with disc?
   }
+}
+
+export interface DocumentationItem {
+  Name: string;
+  Documentation: string;
+}
+
+export interface DocumentationComment {
+  SummaryText: string;
+  TypeParamElements: DocumentationItem[];
+  ParamElements: DocumentationItem[];
+  ReturnsText: string;
+  RemarksText: string;
+  ExampleText: string;
+  ValueText: string;
+  Exception: DocumentationItem[];
+}
+
+export function getDocumentationString(structDoc: DocumentationComment) {
+  let newLine = "\n\n";
+  let indentSpaces = "\t\t";
+  let documentation = "";
+  
+  if (structDoc) {
+      if (structDoc.SummaryText) {
+          documentation += structDoc.SummaryText + newLine;
+      }
+
+      if (structDoc.TypeParamElements && structDoc.TypeParamElements.length > 0) {
+          documentation += "Type Parameters:" + newLine;
+          documentation += indentSpaces + structDoc.TypeParamElements.map(displayDocumentationObject).join("\n" + indentSpaces) + newLine;
+      }
+
+      if (structDoc.ParamElements && structDoc.ParamElements.length > 0) {
+          documentation += "Parameters:" + newLine;
+          documentation += indentSpaces + structDoc.ParamElements.map(displayDocumentationObject).join("\n" + indentSpaces) + newLine;
+      }
+
+      if (structDoc.ReturnsText) {
+          documentation += structDoc.ReturnsText + newLine;
+      }
+
+      if (structDoc.RemarksText) {
+          documentation += structDoc.RemarksText + newLine;
+      }
+
+      if (structDoc.ExampleText) {
+          documentation += structDoc.ExampleText + newLine;
+      }
+
+      if (structDoc.ValueText) {
+          documentation += structDoc.ValueText + newLine;
+      }
+
+      if (structDoc.Exception && structDoc.Exception.length > 0) {
+          documentation += "Exceptions:" + newLine;
+          documentation += indentSpaces + structDoc.Exception.map(displayDocumentationObject).join("\n" + indentSpaces) + newLine;
+      }
+
+      documentation = documentation.trim();
+  }
+  
+  return documentation;
+}
+
+const summaryStartTag = /<summary>/i;
+const summaryEndTag = /<\/summary>/i;
+
+export function displayDocumentationObject(obj: DocumentationItem): string {
+  return obj.Name + ": " + obj.Documentation;
+}
+
+
+export function extractSummaryText(xmlDocComment: string): string {
+  if (!xmlDocComment) {
+      return xmlDocComment;
+  }
+
+  let summary = xmlDocComment;
+
+  let startIndex = summary.search(summaryStartTag);
+  if (startIndex < 0) {
+      return summary;
+  }
+
+  summary = summary.slice(startIndex + '<summary>'.length);
+
+  let endIndex = summary.search(summaryEndTag);
+  if (endIndex < 0) {
+      return summary;
+  }
+
+  return summary.slice(0, endIndex);
 }
