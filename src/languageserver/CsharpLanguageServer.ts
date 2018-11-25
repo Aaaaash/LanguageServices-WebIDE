@@ -10,7 +10,7 @@ import * as lsp from 'vscode-languageserver';
 import { ReadLine, createInterface } from 'readline';
 import { removeBOMFromString, removeBOMFromBuffer } from '../utils/removeBOM';
 import * as requests from '../jsonrpc/csharpRequests';
-import { IExecutable, ILanguageServer, IDispose } from '../types';
+import { ILanguageServer, IDispose } from '../types';
 import LanguageServerManager from '../LanguageServerManager';
 import findMonoPath from '../utils/findMonoPath';
 import RequestQueueManager from '../jsonrpc/RequestQueueManager';
@@ -27,6 +27,8 @@ import {
   QuickFixResponse,
   CodeElement,
   ReferencesCodeLens,
+  FormatRangeResponse,
+  TextChange,
 } from '../protocol/TextDocument';
 
 function createRequest<T extends Request>(
@@ -173,6 +175,12 @@ function createCodeLenses(elements: CodeElement[], fileName: string): any[] {
     ],
     range: codelen.range,
   }));
+}
+
+function asEditOptionation(change: TextChange): lsp.TextEdit {
+  const start = lsp.Position.create(change.StartLine - 1, change.StartColumn - 1);
+  const end = lsp.Position.create(change.EndLine - 1, change.EndColumn - 1);
+  return lsp.TextEdit.replace(lsp.Range.create(start, end), change.NewText);
 }
 
 const commitCharactersWithoutSpace = [
@@ -634,7 +642,48 @@ class CsharpLanguageServer implements ILanguageServer {
           });
         }
       }
-    )
+    );
+    connection.onRequest(
+      new rpc.RequestType<lsp.DocumentFormattingParams, any, any, any>('textDocument/formatting'),
+        async (params) => {
+        const { textDocument, options } = params;
+        const lspDocument = this.openedDocumentUris.get(textDocument.uri);
+        const lineCount = lspDocument.lineCount;
+        const request = {
+          FileName: textDocument.uri,
+          Line: 1,
+          Column: 1,
+          EndLine: lineCount,
+          EndColumn: 1,
+          WantsTextChanges: true,
+        };
+        const result = await this.makeRequest<FormatRangeResponse>(requests.CodeFormat, request);
+        if (result && Array.isArray(result.Changes)) {
+          return result.Changes.map(asEditOptionation)
+        }
+      }
+    );
+
+    connection.onRequest(
+      new rpc.RequestType<lsp.DocumentRangeFormattingParams, any, any, any>
+      ('textDocument/rangeFormatting'),
+      async (params) => {
+        const { textDocument, range } = params;
+        const request = {
+          FileName: textDocument.uri,
+          Line: range.start.line + 1,
+          Column: range.start.character + 1,
+          EndLine: range.end.line + 1,
+          EndColumn: range.end.character + 1,
+          WantsTextChanges: true,
+        };
+
+        const result = await this.makeRequest<FormatRangeResponse>(requests.CodeFormat, request);
+        if (result && Array.isArray(result.Changes)) {
+          return result.Changes.map(asEditOptionation)
+        }
+      }
+    );
 
     connection.onClose(() => this.dispose());
     this.start();
@@ -650,7 +699,7 @@ class CsharpLanguageServer implements ILanguageServer {
         '../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe',
       ),
       '-s',
-      '/Users/sakura/Documents/coding/omnisharp-roslyn',
+      '/Users/sakura/lsp/dotnetMvc',
       '--hostPID',
       process.pid.toString(),
       '--stdio',

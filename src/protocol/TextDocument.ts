@@ -351,3 +351,15 @@ export class ReferencesCodeLens extends OmniSharpCodeLens {
     super(range, fileName);
   }
 }
+
+export interface TextChange {
+  NewText: string;
+  StartLine: number;
+  StartColumn: number;
+  EndLine: number;
+  EndColumn: number;
+}
+
+export interface FormatRangeResponse {
+  Changes: TextChange[];
+}
