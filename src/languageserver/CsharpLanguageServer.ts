@@ -22,6 +22,8 @@ import {
   applyEdits,
   getPosition,
   extractSummaryText,
+  GoToDefinitionResponse,
+  MetadataResponse,
 } from '../protocol/TextDocument';
 
 function createRequest<T extends Request>(
@@ -43,6 +45,23 @@ function createRequest<T extends Request>(
     Buffer: includeBuffer ? document.getText() : undefined,
     FileName: fileName,
   };
+}
+
+function createUri(sourceName: string) : vscodeUri.default {
+  return vscodeUri.default.parse('omnisharp-metadata' + '://' +
+    sourceName.replace(/\\/g, '').replace(/(.*)\/(.*)/g, '$1/[metadata] $2'));
+}
+
+function toLocationFromUri(uri, location: any) {
+  const position = lsp.Position.create(location.Line, location.Column);
+  const endLine = location.EndLine;
+  const endColumn = location.EndColumn;
+
+  if (endLine !== undefined && endColumn !== undefined) {
+    const endPosition = lsp.Position.create(endLine, endColumn);
+    return lsp.Location.create(uri, lsp.Range.create(position, endPosition));
+  }
+  return lsp.Location.create(uri, lsp.Range.create(position, position));
 }
 
 const commitCharactersWithoutSpace = [
@@ -163,7 +182,8 @@ class CsharpLanguageServer implements ILanguageServer {
           capabilities: {
             textDocumentSync: 2,
             completionProvider: {
-              //resolveProvider: true
+              // resolveProvider: true,
+              triggerCharacters: ['.', '@', '#'],
             },
             codeLensProvider: {
               resolveProvider: true,
@@ -270,6 +290,7 @@ class CsharpLanguageServer implements ILanguageServer {
       async (params) => {
         const { textDocument: { uri }, position, context } = params;
         const lspDocument = this.openedDocumentUris.get(uri);
+        this.logger.info(`Receive textDocument/completion rquest: ${uri}`);
         const { line, character } = position;
         const lspPosition = lsp.Position.create(line, character);
         const range = lsp.Range.create(lspPosition, lspPosition);
@@ -281,7 +302,9 @@ class CsharpLanguageServer implements ILanguageServer {
           WantDocumentationForEveryCompletionResult: true,
           WantKind: true,
           WantReturnType: true,
-          TriggerCharacter: context.triggerKind === 1 ? context.triggerCharacter : '0',
+          WantImportableTypes: true,
+          // WantMethodHeader: true,
+          WantSnippet: true,
         };
         if (context.triggerKind === 1) {
           req.TriggerCharacter = context.triggerCharacter;
@@ -293,7 +316,6 @@ class CsharpLanguageServer implements ILanguageServer {
 
         let result: lsp.CompletionItem[] = [];
         let completions: { [c: string]: { items: lsp.CompletionItem[], preselect : boolean } } = Object.create(null);
-
         // transform AutoCompleteResponse to CompletionItem and
         // group by code snippet
         for (let response of responses as Array<any>) {
@@ -353,8 +375,8 @@ class CsharpLanguageServer implements ILanguageServer {
       new rpc.NotificationType<lsp.DidChangeTextDocumentParams, void>('textDocument/didChange'),
       async (params) => {
         const { contentChanges, textDocument: { uri, version } } = params;
+        this.logger.info(`Receive textDocument/didChange rquest: ${uri}`);
         const lspDocument = this.openedDocumentUris.get(uri);
-        // lspDocument.
         const afterDocument = applyEdits(lspDocument.getText(), contentChanges.map(e => {
           const range = e.range || lsp.Range.create(lsp.Position.create(0, 0), getPosition(e.rangeLength || 0));
           return lsp.TextEdit.replace(range, e.text);
@@ -384,7 +406,64 @@ class CsharpLanguageServer implements ILanguageServer {
         }
         return [];
       }
-    )
+    );
+
+    connection.onRequest(
+      new rpc.RequestType<lsp.TextDocumentPositionParams, any, any, any>('textDocument/definition'),
+      async (params) => {
+        const { textDocument, position } = params;
+        this.logger.info(`Receive textDocument/definition rquest: ${textDocument.uri}`);
+        const lspDocument = this.openedDocumentUris.get(textDocument.uri);
+        const request = createRequest(lspDocument, position);
+        const result = await this.makeRequest<GoToDefinitionResponse>(requests.GoToDefinition, { ...request, WantMetadata: true });
+        if (result && result.FileName) {
+          if (result.FileName.startsWith('$metadata$')) {
+            const uri = createUri(result.FileName);
+            return toLocationFromUri(uri.toString(), result);
+          }
+          const fileName = vscodeUri.default.file(result.FileName);
+          const response = toLocationFromUri(fileName.toString(), result);
+          return response;
+        } else if (result.MetadataSource) {
+          const metadataSource = result.MetadataSource;
+          const metadataResponse =  await this.makeRequest<MetadataResponse>(requests.Metadata, {
+            Timeout: 5000,
+            AssemblyName: metadataSource.AssemblyName,
+            VersionNumber: metadataSource.VersionNumber,
+            ProjectName: metadataSource.ProjectName,
+            Language: metadataSource.Language,
+            TypeName: metadataSource.TypeName
+          });
+          if (!metadataResponse || !metadataResponse.Source || !metadataResponse.SourceName) {
+            return;
+          }
+
+          const uri = createUri(metadataResponse.SourceName);
+          const position = lsp.Position.create(result.Line, result.Column);
+          const location = lsp.Location.create(uri.toString(), lsp.Range.create(position, position));
+          return location;
+        }
+      }
+    );
+
+    connection.onRequest(
+      new rpc.RequestType<lsp.TextDocumentPositionParams, any, any, any>('textDocument/documentHighlight'),
+      async (params) => {
+        const { textDocument, position } = params;
+        const lspDocument = this.openedDocumentUris.get(textDocument.uri);
+        const request = {
+          ...createRequest(lspDocument, position),
+          OnlyThisFile: true,
+          ExcludeDefinition: false,
+        };
+        
+        const cancelToken = new rpc.CancellationTokenSource();
+        const result = await this.makeRequest(requests.FindUsages, request, cancelToken.token);
+        console.log(result);
+        return null;
+      }
+    );
+
     this.start();
     this.websocket.onClose(() => this.dispose());
     connection.listen();
@@ -398,7 +477,7 @@ class CsharpLanguageServer implements ILanguageServer {
         '../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe',
       ),
       '-s',
-      '/Users/sakura/Documents/coding/csharp-language-server-protocol/LSP.sln',
+      '/Users/sakura/Documents/coding/omnisharp-roslyn',
       '--hostPID',
       process.pid.toString(),
       '--stdio',
@@ -425,17 +504,6 @@ class CsharpLanguageServer implements ILanguageServer {
     });
 
     this.readLine.addListener('line', this.lineReceived);
-    // this.serverConnection = server.createServerProcess('csharp-lsp', 'mono', args);
-    // this.serverConnection.reader.listen(this.onServerReceive);
-    // // this.serverConnection.reader.onPartialMessage((data) => {
-    // //   console.log(data);
-    // // });
-    // this.serverConnection.reader.onError((err) => {
-    //   console.log(err);
-    // });
-    // this.serverConnection.writer.onError((err) => {
-    //   console.log(err);
-    // });
 
     this.serverProcess.on('error', (err) => {
       this.logger.error(`Error: ${err.message}`);

@@ -272,3 +272,26 @@ export function extractSummaryText(xmlDocComment: string): string {
 
   return summary.slice(0, endIndex);
 }
+
+export interface MetadataSource {
+  AssemblyName: string;
+  ProjectName: string;
+  VersionNumber: string;
+  Language: string;
+  TypeName: string;
+}
+
+export interface ResourceLocation {
+  FileName: string;
+  Line: number;
+  Column: number;
+}
+
+export interface GoToDefinitionResponse extends ResourceLocation {
+  MetadataSource?: MetadataSource;
+}
+
+export interface MetadataResponse {
+  SourceName: string;
+  Source: string;
+}
