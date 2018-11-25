@@ -850,7 +850,6 @@ class CsharpLanguageServer implements ILanguageServer {
     return promise.then((response) => {
       let endTime = Date.now();
       let elapsedTime = endTime - startTime;
-      // this.
       // @todo
       return response;
     });

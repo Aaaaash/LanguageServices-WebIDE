@@ -9,7 +9,6 @@ import { installZip } from '../installZip';
 import { serverBaseUri } from '../../config';
 const { filterAsync } = require('node-filter-async');
 
-/* tslint:disable */
 const logger = log4js.getLogger('csharp-install');
 
 logger.level = 'debug';
@@ -122,9 +121,8 @@ function filterPlatformPackages(
 
       return true;
     });
-  } else {
-    throw new PackageError('Package manifest does not exist.');
   }
+  throw new PackageError('Package manifest does not exist.');
 }
 
 function fileExists(filePath: string): Promise<boolean> {
@@ -140,7 +138,7 @@ function fileExists(filePath: string): Promise<boolean> {
 }
 
 async function filterAlreadyInstalledPackages(
-  packages: AbsolutePathPackage[]
+  packages: AbsolutePathPackage[],
 ): Promise<AbsolutePathPackage[]> {
   return filterAsync(packages, async (pkg: AbsolutePathPackage) => {
     const testPath = pkg.installTestPath;
@@ -194,7 +192,7 @@ async function downloadAndInstallPackages(
   extensionPath: string,
 ) {
   const absolutePathPackages = packages.map(pkg =>
-    AbsolutePathPackage.getAbsolutePathPackage(pkg, extensionPath)
+    AbsolutePathPackage.getAbsolutePathPackage(pkg, extensionPath),
   );
   const filteredPackages = await filterPackages(
     absolutePathPackages,
@@ -257,7 +255,7 @@ async function install() {
   const packages = [
     new PlatformInformation('win32', 'x86_64'),
     new PlatformInformation('darwin', 'x86_64'),
-    new PlatformInformation('linux', 'x86_64')
+    new PlatformInformation('linux', 'x86_64'),
   ];
 
   const name = 'csharp';
