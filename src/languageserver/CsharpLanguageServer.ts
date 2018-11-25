@@ -24,6 +24,9 @@ import {
   extractSummaryText,
   GoToDefinitionResponse,
   MetadataResponse,
+  QuickFixResponse,
+  CodeElement,
+  ReferencesCodeLens,
 } from '../protocol/TextDocument';
 
 function createRequest<T extends Request>(
@@ -47,6 +50,29 @@ function createRequest<T extends Request>(
   };
 }
 
+/* tslint:disable */
+export module SymbolPropertyNames {
+  export const Accessibility = 'accessibility';
+  export const Static = 'static';
+  export const TestFramework = 'testFramework';
+  export const TestMethodName = 'testMethodName';
+}
+export module SymbolRangeNames {
+  export const Attributes = 'attributes';
+  export const Full = 'full';
+  export const Name = 'name';
+}
+
+
+const filteredSymbolNames: { [name: string]: boolean } = {
+  'Equals': true,
+  'Finalize': true,
+  'GetHashCode': true,
+  'ToString': true,
+};
+
+/* tslint:enable */
+
 function createUri(sourceName: string) : vscodeUri.default {
   return vscodeUri.default.parse('omnisharp-metadata' + '://' +
     sourceName.replace(/\\/g, '').replace(/(.*)\/(.*)/g, '$1/[metadata] $2'));
@@ -62,6 +88,91 @@ function toLocationFromUri(uri, location: any) {
     return lsp.Location.create(uri, lsp.Range.create(position, endPosition));
   }
   return lsp.Location.create(uri, lsp.Range.create(position, position));
+}
+
+function toRange(rangeLike: any) {
+  const { Line, Column, EndLine, EndColumn } = rangeLike;
+  const start = lsp.Position.create(Line, Column);
+  const end = lsp.Position.create(EndLine, EndColumn);
+  return lsp.Range.create(start, end);
+}
+
+function walkCodeElements(
+  elements: CodeElement[],
+  action: (element: CodeElement, parentElement?: CodeElement,
+) => void) {
+  function walker(elements: CodeElement[], parentElement?: CodeElement) {
+    for (const element of elements) {
+      action(element, parentElement);
+
+      if (element.Children) {
+        walker(element.Children, element);
+      }
+    }
+  }
+
+  walker(elements);
+}
+
+function isValidElementForReferencesCodeLens(element: CodeElement): boolean {
+  if (element.Kind === 'namespace') {
+    return false;
+  }
+
+  if (element.Kind === 'method' && filteredSymbolNames[element.Name]) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidMethodForTestCodeLens(element: CodeElement): boolean {
+  if (element.Kind !== 'method') {
+    return false;
+  }
+
+  if (!element.Properties ||
+    !element.Properties[SymbolPropertyNames.TestFramework] ||
+    !element.Properties[SymbolPropertyNames.TestMethodName]) {
+    return false;
+  }
+
+  return true;
+}
+
+function createCodeLensesForElement(
+  element: CodeElement,
+  fileName: string,
+): lsp.CodeLens[] {
+  const results: lsp.CodeLens[] = [];
+
+  if (isValidElementForReferencesCodeLens(element)) {
+    const range = element.Ranges['name'];
+    if (range) {
+      results.push(new ReferencesCodeLens(range, fileName));
+    }
+  }
+
+  return results;
+}
+
+function createCodeLenses(elements: CodeElement[], fileName: string): any[] {
+  const result: lsp.CodeLens[] = [];
+  walkCodeElements(elements, (element) => {
+    const codeLenses = createCodeLensesForElement(element, fileName);
+    result.push(...codeLenses);
+  });
+  return result.map(codelen => ({
+    data: [
+      fileName,
+      {
+        line: codelen.range.start.line,
+        character: codelen.range.start.character,
+      },
+      'references',
+    ],
+    range: codelen.range,
+  }));
 }
 
 const commitCharactersWithoutSpace = [
@@ -113,10 +224,6 @@ class CsharpLanguageServer implements ILanguageServer {
   private openedDocumentUris: Map<string, lsp.TextDocument> = new Map<string, lsp.TextDocument>();
 
   private logger: log4js.Logger = log4js.getLogger('CsharpLanguageServer');
-
-  private executable: IExecutable;
-
-  private process: cp.ChildProcess;
 
   private servicesManager: LanguageServerManager;
 
@@ -305,6 +412,7 @@ class CsharpLanguageServer implements ILanguageServer {
           WantImportableTypes: true,
           // WantMethodHeader: true,
           WantSnippet: true,
+          TriggerCharacter: '.',
         };
         if (context.triggerKind === 1) {
           req.TriggerCharacter = context.triggerCharacter;
@@ -401,10 +509,48 @@ class CsharpLanguageServer implements ILanguageServer {
         const { textDocument: { uri } } = params;
         const result = await this.makeRequest<ICodeLens>(requests.CodeStructure, { FileName: uri });
         if (result && result.Elements) {
-          // @ TODO
-          // return createCodeLenses(result.Elements, uri);
+          return createCodeLenses(result.Elements, uri);
         }
         return [];
+      }
+    );
+
+    connection.onRequest(
+      new rpc.RequestType<lsp.CodeLens, any, any, any>('codeLens/resolve'),
+      async (params) => {
+        const { data, range } = params;
+        if (!data || !data[1].line || !data[1].character) {
+          return;
+        }
+        const fileName = data[0].startsWith('/') ? data[0] : '';
+        const request = {
+          FileName: fileName,
+          Line: data[1].line,
+          Column: data[1].character,
+          OnlyThisFile: false,
+          ExcludeDefinition: true,
+        };
+        const result = await this.makeRequest<QuickFixResponse>(requests.FindUsages, request);
+        if (!result || !result.QuickFixes) {
+          return;
+        }
+        const quickFixes = result.QuickFixes;
+        const count = quickFixes.length;
+        return {
+          range,
+          data,
+          command: {
+            title: count === 1 ? '1 references' : `${count} references`,
+            command: 'editor.actions.showReferences',
+            arguments: [
+              fileName,
+              range.start,
+              quickFixes.map((quickfix) => {
+                return toLocationFromUri(quickfix.FileName, quickfix);
+              }),
+            ],
+          },
+        };
       }
     );
 
@@ -458,12 +604,39 @@ class CsharpLanguageServer implements ILanguageServer {
         };
         
         const cancelToken = new rpc.CancellationTokenSource();
-        const result = await this.makeRequest(requests.FindUsages, request, cancelToken.token);
-        console.log(result);
-        return null;
+        const result = await this.makeRequest<QuickFixResponse>(requests.FindUsages, request, cancelToken.token);
+        if (result && Array.isArray(result.QuickFixes)) {
+          return result.QuickFixes.map((quickFix) => lsp.DocumentHighlight.create(toRange(quickFix)))
+        }
+        return [];
       }
     );
 
+    connection.onRequest(
+      new rpc.RequestType<lsp.ReferenceParams, any, any, any>('textDocument/references'),
+      async (params) => {
+        const { textDocument, position, context } = params;
+        const lspDocument = this.openedDocumentUris.get(textDocument.uri);
+        const request = {
+          ...createRequest(lspDocument, position),
+          OnlyThisFile: true,
+          ExcludeDefinition: false,
+        }
+
+        const cancelToken = new rpc.CancellationTokenSource();
+        const result = await this.makeRequest<QuickFixResponse>(requests.FindUsages, request, cancelToken.token);
+
+        if (result && Array.isArray(result.QuickFixes)) {
+          console.log(result.QuickFixes);
+          return result.QuickFixes.map((location) => {
+            const uri = vscodeUri.default.file(location.FileName);
+            return toLocationFromUri(uri.toString(), location);
+          });
+        }
+      }
+    )
+
+    connection.onClose(() => this.dispose());
     this.start();
     this.websocket.onClose(() => this.dispose());
     connection.listen();

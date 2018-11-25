@@ -295,3 +295,59 @@ export interface MetadataResponse {
   SourceName: string;
   Source: string;
 }
+
+export interface QuickFix {
+  LogLevel: string;
+  FileName: string;
+  Line: number;
+  Column: number;
+  EndLine: number;
+  EndColumn: number;
+  Text: string;
+  Projects: string[];
+}
+
+export interface QuickFixResponse {
+  QuickFixes: QuickFix[];
+}
+
+
+export interface Point {
+  Line: number;
+  Column: number;
+}
+
+export interface Range {
+  Start: Point;
+  End: Point;
+}
+
+export interface CodeElement {
+  Kind: string;
+  Name: string;
+  DisplayName: string;
+  Children?: CodeElement[];
+  Ranges: { [name: string]: Range };
+  Properties?: { [name: string]: any };
+}
+
+
+abstract class OmniSharpCodeLens {
+  range: lsp.Range;
+  constructor(
+    range: Range,
+    public fileName: string) {
+
+    const start = lsp.Position.create(range.Start.Line - 1, range.Start.Column - 1);
+    const end = lsp.Position.create(range.End.Line - 1, range.End.Column - 1);
+    this.range = lsp.Range.create(start, end)
+  }
+}
+
+export class ReferencesCodeLens extends OmniSharpCodeLens {
+  constructor(
+    range: Range,
+    fileName: string) {
+    super(range, fileName);
+  }
+}
