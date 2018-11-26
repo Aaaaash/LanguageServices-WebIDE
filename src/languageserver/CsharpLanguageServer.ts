@@ -45,8 +45,8 @@ function createRequest<T extends Request>(
         uriFileName;
 
   return <T>{
-    Line: line,
-    Column: column,
+    Line: line + 1,
+    Column: column + 1,
     Buffer: includeBuffer ? document.getText() : undefined,
     FileName: fileName,
   };
@@ -369,7 +369,7 @@ class CsharpLanguageServer implements ILanguageServer {
         this.logger.info(`Receive textDocument/didOpen request: ${uri}`);
         const source  = new rpc.CancellationTokenSource();
         const filePath = lsp.Files.uriToFilePath(uri);
-        // await this.makeRequest(requests.UpdateBuffer, { FileName: filePath, Buffer: text });
+        await this.makeRequest(requests.UpdateBuffer, { FileName: filePath, Buffer: text });
         const reuslt = await this.makeRequest(requests.CodeCheck, { FileName: filePath }, source.token);
         return reuslt;
       });
@@ -508,7 +508,7 @@ class CsharpLanguageServer implements ILanguageServer {
           Filename: filePath,
         };
 
-        // const result = await this.makeRequest(requests.UpdateBuffer, request);
+        const result = await this.makeRequest(requests.UpdateBuffer, request);
       }
     );
 
