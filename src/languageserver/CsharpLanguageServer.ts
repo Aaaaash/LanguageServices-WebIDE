@@ -699,7 +699,7 @@ class CsharpLanguageServer implements ILanguageServer {
         '../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe',
       ),
       '-s',
-      '/Users/sakura/lsp/dotnetMvc',
+      `/data/coding-ide-home/lsp-workspace/${this.spaceKey}`,
       '--hostPID',
       process.pid.toString(),
       '--stdio',
