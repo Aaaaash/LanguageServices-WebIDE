@@ -433,10 +433,10 @@ class CsharpLanguageServer implements ILanguageServer {
           WantDocumentationForEveryCompletionResult: true,
           WantKind: true,
           WantReturnType: true,
-          WantImportableTypes: true,
+          // WantImportableTypes: true,
           // WantMethodHeader: true,
-          WantSnippet: true,
-          TriggerCharacter: '.',
+          // WantSnippet: true,
+          // TriggerCharacter: '.',
         };
         if (context.triggerKind === 1) {
           req.TriggerCharacter = context.triggerCharacter;
