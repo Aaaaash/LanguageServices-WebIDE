@@ -256,6 +256,8 @@ class CsharpLanguageServer implements ILanguageServer {
 
   public destroyed: boolean = false;
 
+  private rootPath: string;
+
   public requestQueue: RequestQueueManager;
   public messageReader: rpc.WebSocketMessageReader;
   public messageWriter: rpc.WebSocketMessageWriter;
@@ -301,9 +303,12 @@ class CsharpLanguageServer implements ILanguageServer {
       logger,
     );
     connection.onRequest(
-      new rpc.RequestType<any, any, any, any>('initialize'),
+      new rpc.RequestType<lsp.InitializeParams, any, any, any>('initialize'),
       (params, token) => {
+        const { rootPath } = params
         this.logger.info('Receive request initialize');
+        this.rootPath = rootPath;
+        this.start();
         return {
           capabilities: {
             textDocumentSync: 2,
@@ -669,6 +674,7 @@ class CsharpLanguageServer implements ILanguageServer {
         }
       }
     );
+
     connection.onRequest(
       new rpc.RequestType<lsp.DocumentFormattingParams, any, any, any>('textDocument/formatting'),
         async (params) => {
@@ -713,13 +719,24 @@ class CsharpLanguageServer implements ILanguageServer {
       }
     );
 
+    connection.onRequest(
+      new rpc.RequestType<lsp.TextDocumentPositionParams, any, any, any>('textDocument/signatureHelp'),
+      async (params) => {
+        const { textDocument, position } = params;
+        const lspDocument = this.openedDocumentUris.get(textDocument.uri);
+        const request = createRequest(lspDocument, position);
+        const result = await this.makeRequest(requests.SignatureHelp, request);
+        console.log(result);
+      }
+    );
+
     connection.onClose(() => this.dispose());
-    this.start();
     this.websocket.onClose(() => this.dispose());
     connection.listen();
   }
 
   public async start(): Promise<IDispose> {
+    if (!this.rootPath) return;
     const executable = await this.resolveExecutable();
     const args = [
       path.resolve(
@@ -727,7 +744,7 @@ class CsharpLanguageServer implements ILanguageServer {
         '../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe',
       ),
       '-s',
-      `/data/coding-ide-home/workspace/${this.spaceKey}/working-dir`,
+      this.rootPath,
       '--hostPID',
       process.pid.toString(),
       '--stdio',
