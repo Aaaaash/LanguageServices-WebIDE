@@ -721,7 +721,8 @@ class CsharpLanguageServer implements ILanguageServer {
         '../../csharp-lsp/.razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll',
       ),
     ];
-    this.serverProcess = cp.spawn('mono', args);
+    this.serverProcess = cp.spawn(executable, args);
+    this.logger.info(`CSharp lsp is running:${executable} ${args.join(' ')}`);
     this.makeRequest(requests.Projects)
       .then((response: any) => {
         // console.log(response.MsBuild);
@@ -805,10 +806,6 @@ class CsharpLanguageServer implements ILanguageServer {
 
   public async resolveExecutable(): Promise<string> {
     const monopath = await findMonoPath();
-    const ominisharpPath = path.resolve(
-      __dirname,
-      '../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe',
-    );
     return Promise.resolve(monopath);
   }
 
