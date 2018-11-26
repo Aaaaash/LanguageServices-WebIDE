@@ -31,6 +31,15 @@ import {
   TextChange,
 } from '../protocol/TextDocument';
 
+export function sum<T>(arr: T[], selector: (item: T) => number): number {
+  return arr.reduce((prev, curr) => prev + selector(curr), 0);
+}
+
+/** Retrieve the length of an array. Returns 0 if the array is `undefined`. */
+export function safeLength<T>(arr: T[] | undefined) {
+  return arr ? arr.length : 0;
+}
+
 function createRequest<T extends Request>(
   document: lsp.TextDocument,
   where: any,
@@ -728,8 +737,25 @@ class CsharpLanguageServer implements ILanguageServer {
     this.logger.info(`CSharp lsp is running:${executable} ${args.join(' ')}`);
     this.makeRequest(requests.Projects)
       .then((response: any) => {
-        // console.log(response.MsBuild);
-      })
+        if (response.DotNet && response.DotNet.Projects.length > 0) {
+          this.logger.info(`
+            DotNet projects count: ${response.DotNet.Projects.length}
+          `);
+          this.logger.info(`
+            DotNet projects file count: ${sum(response.DotNet.Projects, (p : any) => safeLength(p.SourceFiles))}
+          `);
+        }
+
+        if (response.MsBuild && response.MsBuild.Projects.length > 0) {
+          this.logger.info(`
+            MsBuild projects count: ${response.MsBuild.Projects.length}
+          `);
+          this.logger.info(`
+            MsBuild projects file count: ${sum(response.MsBuild.Projects, (p: any) => safeLength(p.SourceFiles))}
+          `);
+          // @TODO
+        }
+      });
     this.readLine = createInterface({
       input: this.serverProcess.stdout,
       output: this.serverProcess.stdin,
