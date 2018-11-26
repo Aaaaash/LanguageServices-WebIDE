@@ -576,7 +576,10 @@ class CsharpLanguageServer implements ILanguageServer {
         const lspDocument = this.openedDocumentUris.get(textDocument.uri);
         const request = createRequest(lspDocument, position);
         const result = await this.makeRequest<GoToDefinitionResponse>(requests.GoToDefinition, { ...request, WantMetadata: true });
+        this.logger.info(`gotoDefinition response`);
+        console.log(result);
         if (result && result.FileName) {
+
           if (result.FileName.startsWith('$metadata$')) {
             const uri = createUri(result.FileName);
             return toLocationFromUri(uri.toString(), result);
