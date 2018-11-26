@@ -29,6 +29,8 @@ import {
   ReferencesCodeLens,
   FormatRangeResponse,
   TextChange,
+  SignatureHelp,
+  SignatureHelpParameter,
 } from '../protocol/TextDocument';
 
 export function sum<T>(arr: T[], selector: (item: T) => number): number {
@@ -190,6 +192,14 @@ function asEditOptionation(change: TextChange): lsp.TextEdit {
   const start = lsp.Position.create(change.StartLine - 1, change.StartColumn - 1);
   const end = lsp.Position.create(change.EndLine - 1, change.EndColumn - 1);
   return lsp.TextEdit.replace(lsp.Range.create(start, end), change.NewText);
+}
+function getParameterDocumentation(parameter: SignatureHelpParameter) {
+  const summary = parameter.Documentation;
+  if (summary.length > 0) {
+    const paramText = `**${parameter.Name}**: ${summary}`;
+    return lsp.MarkedString.fromPlainText(paramText);
+  }
+  return '';
 }
 
 const commitCharactersWithoutSpace = [
@@ -725,8 +735,29 @@ class CsharpLanguageServer implements ILanguageServer {
         const { textDocument, position } = params;
         const lspDocument = this.openedDocumentUris.get(textDocument.uri);
         const request = createRequest(lspDocument, position);
-        const result = await this.makeRequest(requests.SignatureHelp, request);
-        console.log(result);
+        const result = await this.makeRequest<SignatureHelp>(requests.SignatureHelp, request);
+        // result.
+        const signatures: lsp.SignatureInformation[] = [];
+        const ret = {
+          activeSignature: result.ActiveSignature,
+          activeParameter: result.ActiveParameter,
+        };
+        for(const signature of result.Signatures) {
+          let signatureInfo = lsp.SignatureInformation.create(signature.Label, signature.StructuredDocumentation.SummaryText);
+          signatures.push(signatureInfo);
+
+          for (let parameter of signature.Parameters) {
+            let parameterInfo = lsp.ParameterInformation.create(
+              parameter.Label,
+              getParameterDocumentation(parameter));
+
+            signatureInfo.parameters.push(parameterInfo);
+          }
+        }
+        return {
+          ...ret,
+          signatures,
+        };
       }
     );
 

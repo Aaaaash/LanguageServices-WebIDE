@@ -363,3 +363,23 @@ export interface TextChange {
 export interface FormatRangeResponse {
   Changes: TextChange[];
 }
+
+export interface SignatureHelpParameter {
+  Name: string;
+  Label: string;
+  Documentation: string;
+}
+
+export interface SignatureHelpItem {
+  Name: string;
+  Label: string;
+  Documentation: string;
+  Parameters: SignatureHelpParameter[];
+  StructuredDocumentation: DocumentationComment;
+}
+
+export interface SignatureHelp {
+  Signatures: SignatureHelpItem[];
+  ActiveSignature: number;
+  ActiveParameter: number;
+}
