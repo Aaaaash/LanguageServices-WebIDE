@@ -77,7 +77,7 @@ class JavaLanguageServer implements ILanguageServer {
         CRLF,
         CRLF,
       ];
-      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
+      this.websocketMessageWriter.write(`${headers.join('')}${jsonrpcData}`);
     });
   }
 

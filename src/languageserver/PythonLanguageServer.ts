@@ -177,7 +177,7 @@ class PythonLanguageServer implements ILanguageServer {
         CRLF,
       ];
 
-      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
+      this.websocketMessageWriter.write(`${headers.join('')}${jsonrpcData}`);
     });
   }
 
