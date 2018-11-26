@@ -240,6 +240,8 @@ class CsharpLanguageServer implements ILanguageServer {
 
   private openedDocumentUris: Map<string, lsp.TextDocument> = new Map<string, lsp.TextDocument>();
 
+  private openedMetadataResponses: Map<string, string> = new Map<string, string>();
+
   private logger: log4js.Logger = log4js.getLogger('CsharpLanguageServer');
 
   private servicesManager: LanguageServerManager;
@@ -610,12 +612,20 @@ class CsharpLanguageServer implements ILanguageServer {
           if (!metadataResponse || !metadataResponse.Source || !metadataResponse.SourceName) {
             return;
           }
-
           const uri = createUri(metadataResponse.SourceName);
-          const position = lsp.Position.create(result.Line, result.Column);
+          this.openedMetadataResponses.set(metadataResponse.SourceName, metadataResponse.Source);
+          const position = lsp.Position.create(result.Line - 1, result.Column - 1);
           const location = lsp.Location.create(uri.toString(), lsp.Range.create(position, position));
           return location;
         }
+      }
+    );
+
+    connection.onRequest(
+      new rpc.RequestType<any, any, any, any>('omnisharp/metadata'),
+      async (params) => {
+        const { uri } = params;
+        return this.openedMetadataResponses.get(uri) || '';
       }
     );
 
