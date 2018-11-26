@@ -398,10 +398,8 @@ class CsharpLanguageServer implements ILanguageServer {
         const lspDocument = this.openedDocumentUris.get(uri);
         const filePath = lsp.Files.uriToFilePath(uri);
         const request = {
-          FileName: filePath,
-          Buffer: lspDocument.getText(),
-          Line: position.line,
-          Column: position.character,
+          ...createRequest(lspDocument, position),
+          IncludeDocumentation: true,
         };
         const source = new rpc.CancellationTokenSource();
         const result = await this.makeRequest<IHoverResult>(requests.TypeLookup, request, source.token);
