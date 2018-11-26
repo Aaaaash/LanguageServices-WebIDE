@@ -350,8 +350,9 @@ class CsharpLanguageServer implements ILanguageServer {
           Start: { Line: range.start.line, Column: range.start.character },
           End: { Line: range.end.line, Column: range.end.character },
         };
+        const filePath = lsp.Files.uriToFilePath(uri);
         const request = {
-          FileName: uri,
+          FileName: filePath,
           Line: range.start.line,
           Column: range.end.character,
           Selection: selection,
@@ -367,8 +368,9 @@ class CsharpLanguageServer implements ILanguageServer {
         this.openedDocumentUris.set(uri, lsp.TextDocument.create(uri, languageId, version, text));
         this.logger.info(`Receive textDocument/didOpen request: ${uri}`);
         const source  = new rpc.CancellationTokenSource();
-        await this.makeRequest(requests.UpdateBuffer, { FileName: uri, Buffer: text });
-        const reuslt = await this.makeRequest(requests.CodeCheck, { FileName: uri }, source.token);
+        const filePath = lsp.Files.uriToFilePath(uri);
+        await this.makeRequest(requests.UpdateBuffer, { FileName: filePath, Buffer: text });
+        const reuslt = await this.makeRequest(requests.CodeCheck, { FileName: filePath }, source.token);
         return reuslt;
       });
 
@@ -383,8 +385,9 @@ class CsharpLanguageServer implements ILanguageServer {
         const { textDocument: { uri }, position } = params;
         this.logger.info(`Receive textDocument/hover rquest: ${uri}`);
         const lspDocument = this.openedDocumentUris.get(uri);
+        const filePath = lsp.Files.uriToFilePath(uri);
         const request = {
-          FileName: uri,
+          FileName: filePath,
           Buffer: lspDocument.getText(),
           Line: position.line,
           Column: position.character,
@@ -405,6 +408,7 @@ class CsharpLanguageServer implements ILanguageServer {
       async (params) => {
         const { textDocument: { uri }, position, context } = params;
         const lspDocument = this.openedDocumentUris.get(uri);
+        
         this.logger.info(`Receive textDocument/completion rquest: ${uri}`);
         const { line, character } = position;
         const lspPosition = lsp.Position.create(line, character);
@@ -492,6 +496,7 @@ class CsharpLanguageServer implements ILanguageServer {
       async (params) => {
         const { contentChanges, textDocument: { uri, version } } = params;
         this.logger.info(`Receive textDocument/didChange rquest: ${uri}`);
+        const filePath = lsp.Files.uriToFilePath(uri);
         const lspDocument = this.openedDocumentUris.get(uri);
         const afterDocument = applyEdits(lspDocument.getText(), contentChanges.map(e => {
           const range = e.range || lsp.Range.create(lsp.Position.create(0, 0), getPosition(e.rangeLength || 0));
@@ -500,7 +505,7 @@ class CsharpLanguageServer implements ILanguageServer {
         this.openedDocumentUris.set(uri, lsp.TextDocument.create(uri, lspDocument.languageId, version, afterDocument));
         const request = {
           Buffer: afterDocument,
-          Filename: uri,
+          Filename: filePath,
         };
 
         const result = await this.makeRequest(requests.UpdateBuffer, request);
@@ -515,9 +520,10 @@ class CsharpLanguageServer implements ILanguageServer {
       new rpc.RequestType<lsp.CodeLensParams, any, any, any>('textDocument/codeLens'),
       async (params) => {
         const { textDocument: { uri } } = params;
-        const result = await this.makeRequest<ICodeLens>(requests.CodeStructure, { FileName: uri });
+        const filePath = lsp.Files.uriToFilePath(uri);
+        const result = await this.makeRequest<ICodeLens>(requests.CodeStructure, { FileName: filePath });
         if (result && result.Elements) {
-          return createCodeLenses(result.Elements, uri);
+          return createCodeLenses(result.Elements, filePath);
         }
         return [];
       }
@@ -635,7 +641,6 @@ class CsharpLanguageServer implements ILanguageServer {
         const result = await this.makeRequest<QuickFixResponse>(requests.FindUsages, request, cancelToken.token);
 
         if (result && Array.isArray(result.QuickFixes)) {
-          console.log(result.QuickFixes);
           return result.QuickFixes.map((location) => {
             const uri = vscodeUri.default.file(location.FileName);
             return toLocationFromUri(uri.toString(), location);
@@ -649,8 +654,9 @@ class CsharpLanguageServer implements ILanguageServer {
         const { textDocument, options } = params;
         const lspDocument = this.openedDocumentUris.get(textDocument.uri);
         const lineCount = lspDocument.lineCount;
+        const filePath = lsp.Files.uriToFilePath(textDocument.uri);
         const request = {
-          FileName: textDocument.uri,
+          FileName: filePath,
           Line: 1,
           Column: 1,
           EndLine: lineCount,
@@ -669,8 +675,9 @@ class CsharpLanguageServer implements ILanguageServer {
       ('textDocument/rangeFormatting'),
       async (params) => {
         const { textDocument, range } = params;
+        const filePath = lsp.Files.uriToFilePath(textDocument.uri);
         const request = {
-          FileName: textDocument.uri,
+          FileName: filePath,
           Line: range.start.line + 1,
           Column: range.start.character + 1,
           EndLine: range.end.line + 1,
