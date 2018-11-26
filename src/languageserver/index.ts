@@ -12,7 +12,7 @@ type LanguageServers =
 const serverProfiles: LanguageServerProfile<LanguageServers>[] = [
   { language: 'java', server: JavaLanguageServer },
   { language: 'python', server: PythonLanguageServer },
-  { language: 'csharp', server: CsharpLanguageServer },
+  { language: 'c#', server: CsharpLanguageServer },
 ];
 
 export default serverProfiles;
