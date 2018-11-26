@@ -423,6 +423,7 @@ class CsharpLanguageServer implements ILanguageServer {
         const lspPosition = lsp.Position.create(line, character);
         const range = lsp.Range.create(lspPosition, lspPosition);
         const wordToComplete = lspDocument.getText(range) || '';
+        this.logger.debug(`wordToComplete ${wordToComplete}`);
         const req = createRequest<AutoCompleteRequest>(lspDocument, position);
         const request: AutoCompleteRequest = {
           ...req,
