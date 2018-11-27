@@ -4,7 +4,8 @@
   "jsRules": {},
   "rules": {
     "prefer-array-literal": 0,
-    "import-name": 0
+    "import-name": 0,
+    "max-line-length": false
   },
   "rulesDirectory": []
 }

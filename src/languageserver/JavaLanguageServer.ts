@@ -1,15 +1,15 @@
 import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as glob from 'glob';
+import * as server from 'vscode-ws-jsonrpc/lib/server';
+import * as lsp from 'vscode-languageserver';
+import * as rpc from 'vscode-ws-jsonrpc/lib';
 
 import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
 import findJavaHome from '../utils/findJavaHome';
 import { IExecutable, IDispose } from '../types';
 import AbstractLanguageServer from './AbstractLanguageServer';
 import LanguageServerManager from '../LanguageServerManager';
-import { WebSocket as ProtocolWebSocket } from '../jsonrpc/websocket';
-import { StreamMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
-import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
 
 class JavaLanguageServer extends AbstractLanguageServer {
   private SERVER_HOME = 'lsp-java-server';
@@ -18,18 +18,44 @@ class JavaLanguageServer extends AbstractLanguageServer {
 
   private executable: IExecutable;
 
+  private servicesManager: LanguageServerManager;
+
+  public spaceKey: string;
+  private websocket: rpc.IWebSocket;
   private socket: io.Socket;
 
   public destroyed: boolean = false;
 
-  public websocketMessageReader: WebSocketMessageReader;
-  public websocketMessageWriter: WebSocketMessageWriter;
-
+  public messageReader: rpc.WebSocketMessageReader;
+  public messageWriter: rpc.WebSocketMessageWriter;
   constructor(spaceKey: string, socket: io.Socket) {
     super(spaceKey, JavaLanguageServer.name, LanguageServerManager.getInstance());
+    this.spaceKey = spaceKey;
     this.socket = socket;
-    this.websocketMessageReader = new WebSocketMessageReader(this.socket);
-    this.websocketMessageWriter = new WebSocketMessageWriter(this.socket);
+    this.servicesManager = LanguageServerManager.getInstance();
+    this.logger.level = 'debug';
+    this.websocket = {
+      send: content =>
+        this.socket.send(content, (error) => {
+          if (error) {
+            throw error;
+          }
+        }),
+      onMessage: cb =>
+        this.socket.on('message', (data) => {
+          cb(data.message);
+        }),
+      onError: cb => this.socket.on('error', cb),
+      onClose: cb => this.socket.on('close', cb),
+      dispose: () => this.socket.disconnect(),
+    };
+
+    this.messageReader = new rpc.WebSocketMessageReader(
+      this.websocket,
+    );
+    this.messageWriter = new rpc.WebSocketMessageWriter(
+      this.websocket,
+    );
     socket.on('disconnect', this.dispose.bind(this));
   }
 
@@ -38,36 +64,20 @@ class JavaLanguageServer extends AbstractLanguageServer {
     this.logger.info('Java Executable is ready.');
 
     this.logger.info(`command: ${this.executable.command}.`);
-    this.process = cp.spawn(this.executable.command, this.executable.args);
+    const socketConnection = server.createConnection(this.messageReader, this.messageWriter, this.dispose.bind(this));
+    const serverConnection = server.createServerProcess('Java LSP', this.executable.command, this.executable.args);
     this.logger.info('Java Language Server is running.');
-
-    this.startConversion();
-
-    this.process.on('exit', (code: number, signal: string) => {
-      this.logger.info(`jdt.ls exit, code: ${code}, singnal: ${signal}.`);
-      this.dispose();
+    server.forward(socketConnection, serverConnection, (message) => {
+      return message;
     });
-
     return Promise.resolve(this.dispose);
   }
 
-  private startConversion () {
-    const messageReader = new StreamMessageReader(this.process.stdout);
-    this.websocketMessageReader.listen((data) => {
-      this.process.stdin.write(data.message);
-    });
-
-    messageReader.listen((data) => {
-      const jsonrpcData = JSON.stringify(data);
-      const length = Buffer.byteLength(jsonrpcData, 'utf-8');
-      const headers: string[] = [
-        contentLength,
-        length.toString(),
-        CRLF,
-        CRLF,
-      ];
-      this.websocketMessageWriter.write({ data: `${headers.join('')}${jsonrpcData}` });
-    });
+  public dispose = () => {
+    this.destroyed = true;
+    this.logger.info(`${this.spaceKey} is disconnect.`);
+    this.servicesManager.dispose(this.spaceKey);
+    this.process.kill();
   }
 
   private prepareParams() {
@@ -103,7 +113,7 @@ class JavaLanguageServer extends AbstractLanguageServer {
       `${serverUri}/${launchersFound[0]}`,
       '-configuration',
       `${serverUri}/${JAVA_CONFIG_DIR}`,
-      `-data`,
+      '-data',
       dataDir,
     ];
 
