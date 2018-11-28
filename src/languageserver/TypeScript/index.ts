@@ -133,11 +133,13 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       'ts',
       'node_modules/typescript-language-server/lib/cli.js',
       [
-        '--log-level=4',
-        `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
         '--stdio',
+        '--log-level=4',
+        `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
       ]);
+
     wsConnection.onClose(() => {
+      this.logger.info(`${this.spaceKey} is disconnect, kill tsserver`);
       serverConnection.dispose();
     });
     server.forward(wsConnection, serverConnection, (message) => {
