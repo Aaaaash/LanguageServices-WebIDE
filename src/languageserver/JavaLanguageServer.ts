@@ -70,7 +70,7 @@ class JavaLanguageServer extends AbstractLanguageServer {
     server.forward(socketConnection, serverConnection, (message) => {
       return message;
     });
-    this.websocket.onClose(() => {
+    this.socket.on('disconnect', () => {
       serverConnection.dispose();
     });
     return Promise.resolve(this.dispose);
