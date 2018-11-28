@@ -134,7 +134,6 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       'node_modules/typescript-language-server/lib/cli.js',
       [
         '--log-level=4',
-        '--logVerbosity=verbose',
         `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
         '--stdio',
       ]);
