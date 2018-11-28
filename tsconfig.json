@@ -6,7 +6,8 @@
     "moduleResolution": "node",
     "outDir": "out",
     "sourceMap": false,
-    "rootDir": "src"
+    "rootDir": "src",
+    "downlevelIteration": true
   },
   "exclude": ["node_modules", "server", ".vscode-test", "test"]
 }

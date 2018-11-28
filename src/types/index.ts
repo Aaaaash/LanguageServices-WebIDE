@@ -1,4 +1,5 @@
 import * as io from 'socket.io';
+import AbstractLanguageServer from '../languageserver/AbstractLanguageServer';
 
 export type IExecutable = {
   options: any;
@@ -7,19 +8,10 @@ export type IExecutable = {
 };
 
 export interface ILanguageServerConstructor {
-  new (spaceKey: string, socket: io.Socket): ILanguageServer;
+  new (spaceKey: string, socket: io.Socket): AbstractLanguageServer;
 }
 
-export interface ILanguageServer {
-  start: () => Promise<IDispose>;
-  dispose: () => void;
-  type: Symbol;
-  destroyed: boolean;
-}
-
-// export type LanguageServer = typeof
-
-export type LanguageServerProfile<T> = {
+export type LanguageServerProfile<T extends AbstractLanguageServer> = {
   language: string;
   server: T;
 };

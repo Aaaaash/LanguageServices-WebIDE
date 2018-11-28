@@ -6,8 +6,8 @@ import * as url from 'url';
 import { PORT } from './config';
 import LanguageServerManager from './LanguageServerManager';
 /* tslint:disable */
-import serverProfiles from './languageserver';
-import DebugAdapter from './debugAdapter';
+import serverProfiles from "./languageserver";
+import DebugAdapter from "./debugAdapter";
 /* tslint:enable */
 
 if (process.env.NODE_ENV === 'prod') {
@@ -23,7 +23,9 @@ if (process.env.NODE_ENV === 'prod') {
         encoding: 'utf-8',
       },
     },
-    categories: { default: { appenders: ['out', 'languageServer'], level: 'info' } },
+    categories: {
+      default: { appenders: ['out', 'languageServer'], level: 'info' },
+    },
   });
 }
 
@@ -47,38 +49,43 @@ socket.on('connection', (websocket: io.Socket) => {
   const { ws, language, port, debug } = urlPart.query;
 
   if (!ws) {
-    logger.error(`Missing required parameter 'ws'.`);
-    websocket.send({ data: `Missing required parameter 'ws'.` });
+    logger.error("Missing required parameter 'ws'.");
+    websocket.send({ data: "Missing required parameter 'ws'." });
     return;
   }
 
   if (!language) {
-    logger.error(`Missing required parameter 'language'.`);
-    websocket.send({ data: `Missing required parameter 'language'.` });
+    logger.error("Missing required parameter 'language'.");
+    websocket.send({ data: "Missing required parameter 'language'." });
     return;
   }
 
   if (debug) {
     if (!port) {
-      logger.error(`Missing required parameter 'port'.`);
-      websocket.send({ data: `Missing required parameter 'port'.` });
+      logger.error("Missing required parameter 'port'.");
+      websocket.send({ data: "Missing required parameter 'port'." });
       return;
     }
 
     logger.info(`${language} debugAdapter port is ${port}`);
 
-    const  debugAdapter = new DebugAdapter(Number(port as string), websocket);
+    const debugAdapter = new DebugAdapter(Number(port as string), websocket);
   } else {
     if (servicesManager.servicesIsExisted(ws as string)) {
       websocket.send({ data: `${ws} is already exists.` });
       logger.warn(`${ws} is already exists.`);
     } else {
       /* tslint:disable */
-      const ServerClass = serverProfiles.find(l => l.language === language).server;
+      const ServerClass = serverProfiles.find(l => l.language === language)
+        .server;
       /* tslint:enable */
       const languageServer = new (<any>ServerClass)(<string>ws, websocket);
       const dispose = languageServer.start();
-      servicesManager.push({ dispose, spaceKey: <string>ws, server: languageServer });
+      servicesManager.push({
+        dispose,
+        spaceKey: <string>ws,
+        server: languageServer,
+      });
     }
   }
 });

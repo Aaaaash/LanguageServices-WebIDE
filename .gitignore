@@ -7,4 +7,6 @@ __test__
 repository
 pyls
 .idea
-com.microsoft.java.debug.plugin-0.10.0.jar
+com.microsoft.java.debug.plugin*.jar
+
+csharp-lsp

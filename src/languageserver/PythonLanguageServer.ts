@@ -1,12 +1,12 @@
 import * as cp from 'child_process';
 import * as io from 'socket.io';
-import * as log4js from 'log4js';
 import * as net from 'net';
 import * as kill from 'tree-kill';
 
 import { contentLength, CRLF } from '../config';
-import { ILanguageServer, IDispose, IExecutable } from '../types';
+import { IDispose, IExecutable } from '../types';
 import findPylsHome from '../utils/findPylsHome';
+import AbstractLanguageServer from './AbstractLanguageServer';
 import findUselessPort from '../utils/findUselessPort';
 import { SocketMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
 import LanguageServerManager from '../LanguageServerManager';
@@ -23,27 +23,21 @@ enum ClientState {
   Stopped = 'Stopped',
 }
 
-class PythonLanguageServer implements ILanguageServer {
+class PythonLanguageServer extends AbstractLanguageServer {
 
   private SERVER_HOME = 'lsp-python-server';
 
   public type = Symbol('python');
 
-  private logger: log4js.Logger = log4js.getLogger('PythonLanguageServer');
-
   private executable: IExecutable;
 
-  private process: cp.ChildProcess;
+  public process: cp.ChildProcess;
 
-  private serviceManager: LanguageServerManager;
-
-  private spaceKey: string;
-
-  private socket: io.Socket;
+  public serviceManager: LanguageServerManager;
 
   private port: number;
 
-  private tcpSocket: net.Socket;
+  public tcpSocket: net.Socket;
 
   private messageQueue: string[] = [];
 
@@ -51,22 +45,15 @@ class PythonLanguageServer implements ILanguageServer {
 
   private messageReader: SocketMessageReader;
 
-  /* tslint:disable */
-  private _interval: NodeJS.Timer;
-  /* tslint:enable */
-
   public destroyed: boolean = false;
 
   public websocketMessageReader: WebSocketMessageReader;
   public websocketMessageWriter: WebSocketMessageWriter;
 
-  constructor(spaceKey: string, socket: io.Socket) {
-    this.spaceKey = spaceKey;
-    this.socket = socket;
-    this.serviceManager = LanguageServerManager.getInstance();
-    this.logger.level = 'debug';
+  constructor(public spaceKey: string, private socket: io.Socket) {
+    super(spaceKey, PythonLanguageServer.name, LanguageServerManager.getInstance());
 
-    socket.on('disconnect', this.dispose);
+    this.socket.on('disconnect', this.dispose);
 
     this.websocketMessageReader = new WebSocketMessageReader(socket);
     this.websocketMessageWriter = new WebSocketMessageWriter(socket);
