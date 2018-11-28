@@ -2,6 +2,7 @@ import * as io from 'socket.io';
 import * as cp from 'child_process';
 import * as lsp from 'vscode-languageserver';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
+import * as server from 'vscode-ws-jsonrpc/lib/server';
 import { ReadLine, createInterface } from 'readline';
 import { uriToFilePath } from 'vscode-languageserver/lib/files';
 
@@ -127,12 +128,39 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       this.messageWriter,
     );
 
+    const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
+    const serverConnection = server.createServerProcess(
+      'ts',
+      'node_modules/typescript-language-server/lib/cli.js',
+      [
+        '--stdio',
+        '--log-level=4',
+        `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
+      ]);
+
+    server.forward(wsConnection, serverConnection, (message) => {
+      if (rpc.isRequestMessage(message)) {
+        if (message.method === lsp.InitializeRequest.type.method) {
+          const initializeParams = message.params as lsp.InitializeParams;
+          initializeParams.processId = process.pid;
+        }
+      }
+      return message;
+    });
+
     connection.onRequest(
       new rpc.RequestType<lsp.InitializeParams, any, any, any>('initialize'),
       async (params, token) => {
         this.logger.info('Receive request initialize');
         this.initializeParams = params;
-        const args: string[] = ['--logVerbosity', 'verbose'];
+        const args: string[] = [
+          '--logVerbosity',
+          'verbose',
+          '--log-level',
+          '4',
+          '--tsserver-log-file',
+          `/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
+        ];
         this.process = cp.spawn('tsserver', args);
         this.readLine = createInterface({
           input: this.process.stdout,
@@ -158,7 +186,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
             },
             hoverProvider: true,
             renameProvider: true,
-            referencesProvider: true,
+            // referencesProvider: true,
             signatureHelpProvider: {
               triggerCharacters: ['(', ','],
             },
@@ -425,8 +453,10 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       },
     );
 
-    socket.on('disconnect', this.dispose.bind(this));
-    connection.listen();
+    socket.on('disconnect', () => {
+      serverConnection.dispose();
+    });
+    // connection.listen();
   }
 
   private lineReceived = (line: string) => {
@@ -514,7 +544,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
   public dispose = () => {
     this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
-    this.serviceManager.dispose(this.spaceKey);
+    // this.serviceManager.dispose(this.spaceKey);
     if (this.process) {
       this.process.kill();
     }
