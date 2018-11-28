@@ -137,6 +137,9 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
         `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
         '--stdio',
       ]);
+    wsConnection.onClose(() => {
+      serverConnection.dispose();
+    });
     server.forward(wsConnection, serverConnection, (message) => {
       if (rpc.isRequestMessage(message)) {
         if (message.method === lsp.InitializeRequest.type.method) {
