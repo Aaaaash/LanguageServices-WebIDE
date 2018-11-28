@@ -2,6 +2,7 @@ import * as io from 'socket.io';
 import * as cp from 'child_process';
 import * as lsp from 'vscode-languageserver';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
+import * as server from 'vscode-ws-jsonrpc/lib/server';
 import { ReadLine, createInterface } from 'readline';
 import { uriToFilePath } from 'vscode-languageserver/lib/files';
 
@@ -126,6 +127,19 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       this.messageReader,
       this.messageWriter,
     );
+
+    const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
+
+    const serverConnection = server.createServerProcess('ts', 'node_modules/typescript-language-server/lib/cli.js', ['--logLevel=4', '--stdio']);
+    server.forward(wsConnection, serverConnection, (message) => {
+      if (rpc.isRequestMessage(message)) {
+        if (message.method === lsp.InitializeRequest.type.method) {
+          const initializeParams = message.params as lsp.InitializeParams;
+          initializeParams.processId = process.pid;
+        }
+      }
+      return message;
+    });
 
     connection.onRequest(
       new rpc.RequestType<lsp.InitializeParams, any, any, any>('initialize'),
@@ -426,7 +440,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     );
 
     socket.on('disconnect', this.dispose.bind(this));
-    connection.listen();
+    // connection.listen();
   }
 
   private lineReceived = (line: string) => {
