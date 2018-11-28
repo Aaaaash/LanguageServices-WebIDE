@@ -128,17 +128,25 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       this.messageWriter,
     );
 
-    // const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
-    // const serverConnection = server.createServerProcess('ts', 'node_modules/typescript-language-server/lib/cli.js', ['--logLevel=4', '--stdio']);
-    // server.forward(wsConnection, serverConnection, (message) => {
-    //   if (rpc.isRequestMessage(message)) {
-    //     if (message.method === lsp.InitializeRequest.type.method) {
-    //       const initializeParams = message.params as lsp.InitializeParams;
-    //       initializeParams.processId = process.pid;
-    //     }
-    //   }
-    //   return message;
-    // });
+    const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
+    const serverConnection = server.createServerProcess(
+      'ts',
+      'node_modules/typescript-language-server/lib/cli.js',
+      [
+        '--logLevel=4',
+        '--logVerbosity=verbose',
+        `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
+        '--stdio',
+      ]);
+    server.forward(wsConnection, serverConnection, (message) => {
+      if (rpc.isRequestMessage(message)) {
+        if (message.method === lsp.InitializeRequest.type.method) {
+          const initializeParams = message.params as lsp.InitializeParams;
+          initializeParams.processId = process.pid;
+        }
+      }
+      return message;
+    });
 
     connection.onRequest(
       new rpc.RequestType<lsp.InitializeParams, any, any, any>('initialize'),
@@ -446,7 +454,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     );
 
     socket.on('disconnect', this.dispose.bind(this));
-    connection.listen();
+    // connection.listen();
   }
 
   private lineReceived = (line: string) => {
