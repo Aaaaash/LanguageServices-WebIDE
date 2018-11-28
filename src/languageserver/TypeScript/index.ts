@@ -515,7 +515,9 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
     this.serviceManager.dispose(this.spaceKey);
-    this.process.kill();
+    if (this.process) {
+      this.process.kill();
+    }
   }
 
   public makeRequest<TResponse>(
