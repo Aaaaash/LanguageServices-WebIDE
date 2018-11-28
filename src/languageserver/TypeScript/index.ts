@@ -145,7 +145,14 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       async (params, token) => {
         this.logger.info('Receive request initialize');
         this.initializeParams = params;
-        const args: string[] = ['--logVerbosity', 'verbose'];
+        const args: string[] = [
+          '--logVerbosity',
+          'verbose',
+          '--log-level',
+          '4',
+          '--tsserver-log-file',
+          `/data/coding-ide-home/lsp-workspace/${this.spaceKey}/.tsserverlog`,
+        ];
         this.process = cp.spawn('tsserver', args);
         this.readLine = createInterface({
           input: this.process.stdout,
