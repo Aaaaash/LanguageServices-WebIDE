@@ -186,7 +186,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
             },
             hoverProvider: true,
             renameProvider: true,
-            referencesProvider: true,
+            // referencesProvider: true,
             signatureHelpProvider: {
               triggerCharacters: ['(', ','],
             },
