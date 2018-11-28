@@ -70,6 +70,9 @@ class JavaLanguageServer extends AbstractLanguageServer {
     server.forward(socketConnection, serverConnection, (message) => {
       return message;
     });
+    this.websocket.onClose(() => {
+      serverConnection.dispose();
+    });
     return Promise.resolve(this.dispose);
   }
 
@@ -77,7 +80,9 @@ class JavaLanguageServer extends AbstractLanguageServer {
     this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
     this.servicesManager.dispose(this.spaceKey);
-    this.process.kill();
+    if (this.process) {
+      this.process.kill();
+    }
   }
 
   private prepareParams() {
