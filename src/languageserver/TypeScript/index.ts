@@ -138,10 +138,6 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
         `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
       ]);
 
-    wsConnection.onClose(() => {
-      this.logger.info(`${this.spaceKey} is disconnect, kill tsserver`);
-      serverConnection.dispose();
-    });
     server.forward(wsConnection, serverConnection, (message) => {
       if (rpc.isRequestMessage(message)) {
         if (message.method === lsp.InitializeRequest.type.method) {
@@ -457,7 +453,9 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       },
     );
 
-    socket.on('disconnect', this.dispose.bind(this));
+    socket.on('disconnect', () => {
+      serverConnection.dispose();
+    });
     // connection.listen();
   }
 
@@ -546,7 +544,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
   public dispose = () => {
     this.destroyed = true;
     this.logger.info(`${this.spaceKey} is disconnect.`);
-    this.serviceManager.dispose(this.spaceKey);
+    // this.serviceManager.dispose(this.spaceKey);
     if (this.process) {
       this.process.kill();
     }
