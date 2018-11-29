@@ -980,7 +980,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
     const args = [
       path.resolve(
         __dirname,
-        "../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe"
+        "../../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe"
       ),
       "-s",
       this.rootPath,
