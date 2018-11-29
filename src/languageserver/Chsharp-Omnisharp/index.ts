@@ -1,5 +1,4 @@
 import * as io from 'socket.io';
-import * as log4js from 'log4js';
 import * as cp from 'child_process';
 import * as path from 'path';
 import * as vscodeUri from 'vscode-uri';
@@ -8,12 +7,12 @@ import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as lsp from 'vscode-languageserver';
 
 import { ReadLine, createInterface } from 'readline';
-import { removeBOMFromString, removeBOMFromBuffer } from '../utils/removeBOM';
-import * as requests from '../jsonrpc/csharpRequests';
-import { IDispose } from '../types';
-import LanguageServerManager from '../LanguageServerManager';
-import findMonoPath from '../utils/findMonoPath';
-import RequestQueueManager from '../jsonrpc/RequestQueueManager';
+import { removeBOMFromString, removeBOMFromBuffer } from '../../utils/removeBOM';
+import * as requests from './types';
+import { IDispose } from '../../types';
+import LanguageServerManager from '../../LanguageServerManager';
+import findMonoPath from '../../utils/findMonoPath';
+import RequestQueueManager from './RequestQueueManager';
 import {
   getDocumentationString,
   DocumentationComment,
@@ -31,8 +30,8 @@ import {
   TextChange,
   SignatureHelp,
   SignatureHelpParameter,
-} from '../protocol/TextDocument';
-import AbstractLanguageServer from './AbstractLanguageServer';
+} from '../../protocol/TextDocument';
+import AbstractLanguageServer from '../AbstractLanguageServer';
 
 export function sum<T>(arr: T[], selector: (item: T) => number): number {
   return arr.reduce((prev, curr) => prev + selector(curr), 0);
@@ -334,7 +333,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
 
   private rootPath: string;
 
-  public requestQueue: RequestQueueManager;
+  public requestQueue: RequestQueueManager<requests.CsharpLSPRequest>;
   public messageReader: rpc.WebSocketMessageReader;
   public messageWriter: rpc.WebSocketMessageWriter;
 

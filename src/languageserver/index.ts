@@ -1,16 +1,15 @@
 import { LanguageServerProfile } from '../types';
-import JavaLanguageServer from './JavaLanguageServer';
+import Java from './Java';
 import PythonLanguageServer from './PythonLanguageServer';
-import CsharpLanguageServer from './CsharpLanguageServer';
+import ChsharpOmnisharp from './Chsharp-Omnisharp';
 import TypeScript from './TypeScript';
-import AbstractLanguageServer from './AbstractLanguageServer';
 
 const serverProfiles: LanguageServerProfile<any>[] = [
-  { language: 'java', server: JavaLanguageServer },
+  { language: 'java', server: Java },
   { language: 'python', server: PythonLanguageServer },
   { language: 'typescript', server: TypeScript },
   { language: 'javascript', server: TypeScript },
-  { language: 'c#', server: CsharpLanguageServer },
+  { language: 'c#', server: ChsharpOmnisharp },
 ];
 
 export default serverProfiles;

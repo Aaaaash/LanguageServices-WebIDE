@@ -1,16 +1,16 @@
-import RequestQueue from './RequestQueue';
+import RequestQueue from '../../protocol/RequestQueue';
+import { LSPRequest } from '../../protocol/Request';
 import {
   isPriorityCommand,
-  isDeferredCommand,
   isNormalCommand,
-} from './csharpRequests';
+} from './types';
 
-class RequestQueueManager {
+class RequestQueueManager<T extends LSPRequest> {
   /* tslint:disable */
   private _isProcessing: boolean;
-  private _priorityQueue: RequestQueue;
-  private _normalQueue: RequestQueue;
-  private _deferredQueue: RequestQueue;
+  private _priorityQueue: RequestQueue<T>;
+  private _normalQueue: RequestQueue<T>;
+  private _deferredQueue: RequestQueue<T>;
   /* tslint:enable */
   constructor(makeRequest: (request) => number) {
     this._priorityQueue = new RequestQueue('Priority', 1, makeRequest);

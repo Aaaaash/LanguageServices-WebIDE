@@ -3,15 +3,15 @@ import * as io from 'socket.io';
 import * as net from 'net';
 import * as kill from 'tree-kill';
 
-import { contentLength, CRLF } from '../config';
-import { IDispose, IExecutable } from '../types';
-import findPylsHome from '../utils/findPylsHome';
-import AbstractLanguageServer from './AbstractLanguageServer';
-import findUselessPort from '../utils/findUselessPort';
-import { SocketMessageReader, WebSocketMessageReader } from '../jsonrpc/messageReader';
-import LanguageServerManager from '../LanguageServerManager';
-import { LANGUAGE_STATUS } from '../protocol';
-import { WebSocketMessageWriter } from '../jsonrpc/messageWriter';
+import { contentLength, CRLF } from '../../config';
+import { IDispose, IExecutable } from '../../types';
+import findPylsHome from '../../utils/findPylsHome';
+import AbstractLanguageServer from '../AbstractLanguageServer';
+import findUselessPort from '../../utils/findUselessPort';
+import { SocketMessageReader, WebSocketMessageReader } from '../../jsonrpc/messageReader';
+import LanguageServerManager from '../../LanguageServerManager';
+import { LANGUAGE_STATUS } from '../../protocol';
+import { WebSocketMessageWriter } from '../../jsonrpc/messageWriter';
 
 enum ClientState {
   Initial = 'Initial',

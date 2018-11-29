@@ -4,11 +4,11 @@ import * as glob from 'glob';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
 
-import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
-import findJavaHome from '../utils/findJavaHome';
-import { IExecutable, IDispose } from '../types';
-import AbstractLanguageServer from './AbstractLanguageServer';
-import LanguageServerManager from '../LanguageServerManager';
+import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../../config';
+import findJavaHome from '../../utils/findJavaHome';
+import { IExecutable, IDispose } from '../../types';
+import AbstractLanguageServer from '../AbstractLanguageServer';
+import LanguageServerManager from '../../LanguageServerManager';
 
 class JavaLanguageServer extends AbstractLanguageServer {
   private SERVER_HOME = 'lsp-java-server';
