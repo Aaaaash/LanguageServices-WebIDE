@@ -7,7 +7,10 @@ import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as lsp from 'vscode-languageserver';
 
 import { ReadLine, createInterface } from 'readline';
-import { removeBOMFromString, removeBOMFromBuffer } from '../../utils/removeBOM';
+import {
+  removeBOMFromString,
+  removeBOMFromBuffer,
+} from '../../utils/removeBOM';
 import * as requests from './types';
 import { IDispose } from '../../types';
 import LanguageServerManager from '../../LanguageServerManager';
@@ -88,7 +91,9 @@ const filteredSymbolNames: { [name: string]: boolean } = {
 
 function createUri(sourceName: string): vscodeUri.default {
   return vscodeUri.default.parse(
-    `omnisharp-metadata://${sourceName.replace(/\\/g, '').replace(/(.*)\/(.*)/g, '$1/[metadata] $2')}`,
+    `omnisharp-metadata://${sourceName
+      .replace(/\\/g, '')
+      .replace(/(.*)\/(.*)/g, '$1/[metadata] $2')}`,
   );
 }
 
@@ -990,7 +995,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
       "--plugin",
       path.resolve(
         __dirname,
-        "../../csharp-lsp/.razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll"
+        "../../../csharp-lsp/.razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll"
       )
     ];
     this.serverProcess = cp.spawn(executable, args);
@@ -1115,7 +1120,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
     this.logger.info(`${this.spaceKey} is disconnect.`);
     this.servicesManager.dispose(this.spaceKey);
     this.serverProcess.kill();
-  }
+  };
 
   public makeRequest<TResponse>(
     command: string,
