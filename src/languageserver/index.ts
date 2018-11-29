@@ -1,7 +1,7 @@
 import { LanguageServerProfile } from '../types';
 import Java from './Java';
 import Python from './Python';
-import ChsharpOmnisharp from './Chsharp-Omnisharp';
+import CSharpOmnisharp from './CSharp-Omnisharp';
 import TypeScript from './TypeScript';
 
 const serverProfiles: LanguageServerProfile<any>[] = [
@@ -9,7 +9,7 @@ const serverProfiles: LanguageServerProfile<any>[] = [
   { language: 'python', server: Python },
   { language: 'typescript', server: TypeScript },
   { language: 'javascript', server: TypeScript },
-  { language: 'c#', server: ChsharpOmnisharp },
+  { language: 'c#', server: CSharpOmnisharp },
 ];
 
 export default serverProfiles;
