@@ -8,5 +8,5 @@ repository
 pyls
 .idea
 com.microsoft.java.debug.plugin*.jar
-
+csharp-lsp.tar.gz
 csharp-lsp

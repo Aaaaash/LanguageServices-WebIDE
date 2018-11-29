@@ -2,7 +2,6 @@ import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
-import * as lsp from 'vscode-languageserver';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
 
 import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../config';
