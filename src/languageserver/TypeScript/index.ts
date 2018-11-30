@@ -140,6 +140,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
 
     server.forward(wsConnection, serverConnection, (message) => {
       if (rpc.isRequestMessage(message)) {
+        this.logger.info(`Receive request: ${message.method}`);
         if (message.method === lsp.InitializeRequest.type.method) {
           const initializeParams = message.params as lsp.InitializeParams;
           initializeParams.processId = process.pid;
@@ -454,9 +455,9 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     );
 
     socket.on('disconnect', () => {
+      this.logger.info(`${this.spaceKey} is disconnect, tsserver process will been kill.`);
       serverConnection.dispose();
     });
-    // connection.listen();
   }
 
   private lineReceived = (line: string) => {
@@ -543,8 +544,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
 
   public dispose = () => {
     this.destroyed = true;
-    this.logger.info(`${this.spaceKey} is disconnect.`);
-    // this.serviceManager.dispose(this.spaceKey);
+    this.serviceManager.dispose(this.spaceKey);
     if (this.process) {
       this.process.kill();
     }
