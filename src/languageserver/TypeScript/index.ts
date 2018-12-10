@@ -1,5 +1,6 @@
 import * as io from 'socket.io';
 import * as cp from 'child_process';
+import * as kill from 'tree-kill';
 import * as lsp from 'vscode-languageserver';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
@@ -556,6 +557,8 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     this.destroyed = true;
     this.serviceManager.dispose(this.spaceKey);
     if (this.process) {
+      kill(this.process.pid);
+      this.process.kill('SIGHUP');
       this.process.kill();
     }
   }
