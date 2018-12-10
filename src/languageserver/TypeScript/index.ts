@@ -132,12 +132,17 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
     const serverConnection = server.createServerProcess(
       'ts-language-server',
-      'node_modules/typescript-language-server/lib/cli.js',
+      'node',
       [
+        'node_modules/typescript-language-server/lib/cli.js',
         '--stdio',
         '--log-level=4',
         `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
-      ]);
+      ],
+      {
+        detached: true,
+        shell: true,
+      });
 
     server.forward(wsConnection, serverConnection, (message) => {
       if (rpc.isRequestMessage(message)) {
@@ -467,6 +472,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     socket.on('disconnect', () => {
       this.logger.info(`${this.spaceKey} is disconnect, tsserver process will been kill.`);
       serverConnection.dispose();
+      serverConnection.
       this.dispose();
     });
   }
