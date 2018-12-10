@@ -169,6 +169,13 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
           terminal: false,
         });
 
+        this.process.on('error', (err) => {
+          this.logger.error(`tsserver error: ${err.message}`);
+          if (err.stack) {
+            this.logger.debug(err.stack);
+          }
+        });
+
         this.readLine.addListener('line', this.lineReceived);
         return {
           capabilities: {
