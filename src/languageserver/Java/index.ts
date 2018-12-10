@@ -1,6 +1,7 @@
 import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as glob from 'glob';
+import * as lsp from 'vscode-languageserver';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
 import * as fs from 'fs-extra';
@@ -70,6 +71,13 @@ class JavaLanguageServer extends AbstractLanguageServer {
     const serverConnection = server.createServerProcess('Java LSP', this.executable.command, this.executable.args);
     this.logger.info('Java Language Server is running.');
     server.forward(socketConnection, serverConnection, (message) => {
+      if (rpc.isRequestMessage(message)) {
+        this.logger.info(`Receive request: ${message.method}`);
+        if (message.method === lsp.InitializeRequest.type.method) {
+          const initializeParams = message.params as lsp.InitializeParams;
+          initializeParams.processId = process.pid;
+        }
+      }
       return message;
     });
     this.socket.on('disconnect', () => {

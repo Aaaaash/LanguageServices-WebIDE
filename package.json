@@ -22,7 +22,6 @@
   "pre-commit": [
     "pre-commitmsg",
     "test",
-    "test-pass",
     "tslint"
   ],
   "dependencies": {

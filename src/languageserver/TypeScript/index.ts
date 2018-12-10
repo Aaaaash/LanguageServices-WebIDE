@@ -131,7 +131,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
 
     const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
     const serverConnection = server.createServerProcess(
-      'ts',
+      'ts-language-server',
       'node_modules/typescript-language-server/lib/cli.js',
       [
         '--stdio',
@@ -466,7 +466,7 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
 
     socket.on('disconnect', () => {
       this.logger.info(`${this.spaceKey} is disconnect, tsserver process will been kill.`);
-      // serverConnection.dispose();
+      serverConnection.dispose();
       this.dispose();
     });
   }
