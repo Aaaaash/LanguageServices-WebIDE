@@ -129,26 +129,26 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       this.messageWriter,
     );
 
-    // const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
-    // const serverConnection = server.createServerProcess(
-    //   'ts',
-    //   'node_modules/typescript-language-server/lib/cli.js',
-    //   [
-    //     '--stdio',
-    //     '--log-level=4',
-    //     `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
-    //   ]);
+    const wsConnection = server.createConnection(this.messageReader, this.messageWriter, () => this.websocket.dispose());
+    const serverConnection = server.createServerProcess(
+      'ts-language-server',
+      'node_modules/typescript-language-server/lib/cli.js',
+      [
+        '--stdio',
+        '--log-level=4',
+        `--tsserver-log-file=/data/coding-ide-home/lsp-workspace/${this.spaceKey}/tsserverlog.log`,
+      ]);
 
-    // server.forward(wsConnection, serverConnection, (message) => {
-    //   if (rpc.isRequestMessage(message)) {
-    //     this.logger.info(`Receive request: ${message.method}`);
-    //     if (message.method === lsp.InitializeRequest.type.method) {
-    //       const initializeParams = message.params as lsp.InitializeParams;
-    //       initializeParams.processId = process.pid;
-    //     }
-    //   }
-    //   return message;
-    // });
+    server.forward(wsConnection, serverConnection, (message) => {
+      if (rpc.isRequestMessage(message)) {
+        this.logger.info(`Receive request: ${message.method}`);
+        if (message.method === lsp.InitializeRequest.type.method) {
+          const initializeParams = message.params as lsp.InitializeParams;
+          initializeParams.processId = process.pid;
+        }
+      }
+      return message;
+    });
 
     connection.onRequest(
       new rpc.RequestType<lsp.InitializeParams, any, any, any>('initialize'),
@@ -462,11 +462,11 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
       },
     );
 
-    connection.listen();
+    // connection.listen();
 
     socket.on('disconnect', () => {
       this.logger.info(`${this.spaceKey} is disconnect, tsserver process will been kill.`);
-      // serverConnection.dispose();
+      serverConnection.dispose();
       this.dispose();
     });
   }
