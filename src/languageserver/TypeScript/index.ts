@@ -472,7 +472,6 @@ class TypeScriptLanguageServer extends AbstractLanguageServer {
     socket.on('disconnect', () => {
       this.logger.info(`${this.spaceKey} is disconnect, tsserver process will been kill.`);
       serverConnection.dispose();
-      serverConnection.
       this.dispose();
     });
   }
