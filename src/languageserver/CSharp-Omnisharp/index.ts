@@ -979,6 +979,11 @@ class CsharpLanguageServer extends AbstractLanguageServer {
     const executable = await this.resolveExecutable();
     const razor= await findRazor();
     const args = [
+      path.resolve(
+        __dirname,
+        "../../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe"
+      ),
+      '--assembly-loader=strict',
       "-s",
       this.rootPath,
       "--hostPID",
@@ -992,8 +997,13 @@ class CsharpLanguageServer extends AbstractLanguageServer {
       "--plugin",
       razor
     ];
-    this.serverProcess = cp.spawn(executable, args);
-    this.logger.info(`CSharp lsp is running:${executable} ${args.join(" ")}`);
+    const processEnv = {
+      ...process.env,
+      PATH: path.join(executable, 'bin') + path.delimiter + process.env['PATH'],
+      MONO_GAC_PREFIX: executable,
+    };
+    this.serverProcess = cp.spawn(executable, args, { cwd: this.rootPath, detached: false, env: processEnv });
+    this.logger.info(`CSharp-Omisharp is running:${executable} ${args.join(" ")}`);
     this.makeRequest(requests.Projects).then((response: any) => {
       if (response.DotNet && response.DotNet.Projects.length > 0) {
         this.logger.info(`
@@ -1098,7 +1108,9 @@ class CsharpLanguageServer extends AbstractLanguageServer {
 
   private _handleEventPacket(packet) {
     if (packet.Event === "log") {
-      // this.logger.info(packet.Body.Message);
+      const { Body: { LogLevel, Name, Message } } = packet;
+      const logLevel = LogLevel.toLowerCase();
+      this.logger.debug(`[${logLevel}]-${Name}: ${Message}`);
     } else {
       // this._fireEvent(packet.Event, packet.Body);
     }
