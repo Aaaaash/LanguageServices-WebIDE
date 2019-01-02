@@ -108,8 +108,8 @@ process.on('SIGINT', clear);
 process.on('SIGTERM', clear);
 
 function clear() {
-  // servicesManager.disposeAll();
+  servicesManager.disposeAll();
   log4js.shutdown(() => {});
   console.log('application exit');
-  // process.exit();
+  process.exit();
 }
