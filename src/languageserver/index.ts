@@ -9,7 +9,7 @@ const serverProfiles: LanguageServerProfile<any>[] = [
   { language: 'python', server: Python },
   { language: 'typescript', server: TypeScript },
   { language: 'javascript', server: TypeScript },
-  { language: 'c#', server: CSharpOmnisharp },
+  { language: 'csharp', server: CSharpOmnisharp },
 ];
 
 export default serverProfiles;

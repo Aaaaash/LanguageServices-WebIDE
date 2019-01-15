@@ -14,7 +14,7 @@ import {
 import * as requests from './types';
 import { IDispose } from '../../types';
 import LanguageServerManager from '../../LanguageServerManager';
-import findMonoPath from '../../utils/findMonoPath';
+import { findMonoHome, findRazor } from '../../utils/findMonoPath';
 import RequestQueueManager from './RequestQueueManager';
 import {
   getDocumentationString,
@@ -977,11 +977,8 @@ class CsharpLanguageServer extends AbstractLanguageServer {
   public async start(): Promise<IDispose> {
     if (!this.rootPath) return;
     const executable = await this.resolveExecutable();
+    const razor= await findRazor();
     const args = [
-      path.resolve(
-        __dirname,
-        "../../../csharp-lsp/.omnisharp/1.32.8/omnisharp/OmniSharp.exe"
-      ),
       "-s",
       this.rootPath,
       "--hostPID",
@@ -993,10 +990,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
       "--loglevel",
       "infomation",
       "--plugin",
-      path.resolve(
-        __dirname,
-        "../../../csharp-lsp/.razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll"
-      )
+      razor
     ];
     this.serverProcess = cp.spawn(executable, args);
     this.logger.info(`CSharp lsp is running:${executable} ${args.join(" ")}`);
@@ -1111,7 +1105,7 @@ class CsharpLanguageServer extends AbstractLanguageServer {
   }
 
   public async resolveExecutable(): Promise<string> {
-    const monopath = await findMonoPath();
+    const monopath = await findMonoHome();
     return Promise.resolve(monopath);
   }
 

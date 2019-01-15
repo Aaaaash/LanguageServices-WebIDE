@@ -1,15 +1,22 @@
-import * as cp from 'child_process';
-import { trim } from 'lodash';
+import * as fs from 'fs';
+import { func } from './is';
 
-function findMonoHome(): Promise<string> {
+const stat = fs.statSync;
+
+export function findMonoHome(): Promise<string> {
   return new Promise((resolve, reject) => {
-    cp.exec('which mono', (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(trim(stdout));
-    });
+    if (process.env.LSP_HOME && stat(`${process.env.LSP_HOME}/runtimes/csharp/run`).isFile()) {
+      resolve(`${process.env.LSP_HOME}/runtimes/csharp/run`);
+    }
+    reject('mono not found');
   });
 }
 
-export default findMonoHome;
+export function findRazor(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (process.env.LSP_HOME && stat(`${process.env.LSP_HOME}/lsp-csharp-server/razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll`).isFile()) {
+      resolve(`${process.env.LSP_HOME}/lsp-csharp-server/razor/OmniSharpPlugin/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll`);
+    }
+    reject('razor not found');
+  });
+}
