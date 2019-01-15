@@ -29,7 +29,9 @@ function _findJavaHome(options, cb) {
   let macUtility;
   let possibleKeyPaths;
 
-  if (process.env.JAVA_HOME && dirIsJavaHome(process.env.JAVA_HOME, JAVA_FILENAME)) {
+  if (process.env.LSP_HOME && dirIsJavaHome(process.env.LSP_HOME + "/runtimes/java", JAVA_FILENAME)) {
+    javaHome = process.env.LSP_HOME + "/runtimes/java";
+  } else if (process.env.JAVA_HOME && dirIsJavaHome(process.env.JAVA_HOME, JAVA_FILENAME)) {
     javaHome = process.env.JAVA_HOME;
   }
 

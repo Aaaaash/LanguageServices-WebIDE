@@ -46,7 +46,7 @@ const socket = io(server, {
 
 socket.on('connection', (websocket: io.Socket) => {
   const urlPart = url.parse(websocket.request.url, true);
-  const { ws, language, port, debug } = urlPart.query;
+  const { ws, language, debugport, debug } = urlPart.query;
 
   if (!ws) {
     logger.error("Missing required parameter 'ws'.");
@@ -61,15 +61,15 @@ socket.on('connection', (websocket: io.Socket) => {
   }
 
   if (debug) {
-    if (!port) {
-      logger.error("Missing required parameter 'port'.");
-      websocket.send({ data: "Missing required parameter 'port'." });
+    if (!debugport) {
+      logger.error("Missing required parameter 'debugport'.");
+      websocket.send({ data: "Missing required parameter 'debugport'." });
       return;
     }
 
-    logger.info(`${language} debugAdapter port is ${port}`);
+    logger.info(`${language} debugAdapter port is ${debugport}`);
 
-    const debugAdapter = new DebugAdapter(Number(port as string), websocket);
+    const debugAdapter = new DebugAdapter(Number(debugport as string), websocket);
   } else {
     if (servicesManager.servicesIsExisted(ws as string)) {
       websocket.send({ data: `${ws} is already exists.` });

@@ -3,8 +3,9 @@ import * as io from 'socket.io';
 import * as glob from 'glob';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as rpc from 'vscode-ws-jsonrpc/lib';
+import * as fs from 'fs-extra';
 
-import { serverBaseUri, temporaryData, contentLength, CRLF, JAVA_CONFIG_DIR } from '../../config';
+import { serverBaseUri, contentLength, CRLF, LSP_DATA_DIR, JAVA_CONFIG_DIR_NAME } from '../../config';
 import findJavaHome from '../../utils/findJavaHome';
 import { IExecutable, IDispose } from '../../types';
 import AbstractLanguageServer from '../AbstractLanguageServer';
@@ -60,6 +61,8 @@ class JavaLanguageServer extends AbstractLanguageServer {
 
   public async start(): Promise<IDispose> {
     await this.prepareExecutable();
+    this.logger.info('prepareExecutable ready.');
+    await this.prepareDataDir();
     this.logger.info('Java Executable is ready.');
 
     this.logger.info(`command: ${this.executable.command}.`);
@@ -87,13 +90,10 @@ class JavaLanguageServer extends AbstractLanguageServer {
   private prepareParams() {
     const launchersFound: string[] = glob.sync(
       '**/plugins/org.eclipse.equinox.launcher_*.jar',
-      { cwd: `./${this.SERVER_HOME}` },
+      { cwd: `${process.env.LSP_HOME}` },
     );
 
     const serverUri = serverBaseUri(this.SERVER_HOME);
-    const dataDir = temporaryData(this.spaceKey);
-
-    this.logger.info(`jdt.ls data directory: ${dataDir}`);
 
     if (launchersFound.length === 0 || !launchersFound) {
       this.logger.error(
@@ -114,11 +114,11 @@ class JavaLanguageServer extends AbstractLanguageServer {
       '-noverify',
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-jar',
-      `${serverUri}/${launchersFound[0]}`,
+      `${launchersFound[0]}`,
       '-configuration',
-      `${serverUri}/${JAVA_CONFIG_DIR}`,
+      `${LSP_DATA_DIR}/${JAVA_CONFIG_DIR_NAME}`,
       '-data',
-      dataDir,
+      `${LSP_DATA_DIR}`,
     ];
 
     return params;
@@ -139,6 +139,12 @@ class JavaLanguageServer extends AbstractLanguageServer {
     executable.args = params;
 
     this.executable = executable;
+  }
+
+  private async prepareDataDir() {
+    fs.existsSync(LSP_DATA_DIR) || fs.mkdirSync(LSP_DATA_DIR);
+    const destPath = `${LSP_DATA_DIR}/${JAVA_CONFIG_DIR_NAME}`;
+    (fs.existsSync(destPath) && fs.statSync(destPath).isDirectory()) || fs.copySync(`${process.env.LSP_HOME}/${this.SERVER_HOME}/${JAVA_CONFIG_DIR_NAME}`, destPath);
   }
 }
 

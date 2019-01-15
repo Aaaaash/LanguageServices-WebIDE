@@ -17,7 +17,9 @@ export const CRLF = '\r\n';
 
 export const MAX_JAVA_SERVICES = 20;
 
-export const JAVA_CONFIG_DIR = process.platform === 'darwin'
+export const LSP_DATA_DIR = `${process.env.HOME}/.lsp/`;
+
+export const JAVA_CONFIG_DIR_NAME = process.platform === 'darwin'
   ? 'config_mac'
   : process.platform === 'linux'
     ? 'config_linux'
