@@ -2,8 +2,9 @@ import * as cp from 'child_process';
 import * as io from 'socket.io';
 import * as net from 'net';
 import * as kill from 'tree-kill';
+import * as fs from 'fs';
 
-import { contentLength, CRLF } from '../../config';
+import { contentLength, CRLF, LSP_DATA_DIR  } from '../../config';
 import { IDispose, IExecutable } from '../../types';
 import findPylsHome from '../../utils/findPylsHome';
 import AbstractLanguageServer from '../AbstractLanguageServer';
@@ -74,7 +75,7 @@ class PythonLanguageServer extends AbstractLanguageServer {
     const { command, args } = this.executable;
     this.logger.info(`command: ${command} ${args.join(' ')}.`);
 
-    this.process = cp.spawn(command, args);
+    this.process = cp.spawn(command, args, { stdio: 'inherit' });
     this.logger.info(`Python Lanugaue Server is running in TCP mode, port: ${this.port}.`);
 
     this.process.on('data', (data) => {
@@ -202,10 +203,11 @@ class PythonLanguageServer extends AbstractLanguageServer {
       '--tcp',
       '-v',
       `--port=${this.port}`,
-      `--log-file=${process.cwd()}/pyls-log.log`,
+      `--log-file=${LSP_DATA_DIR}pyls-log.log`,
     ];
 
     this.executable = executable;
+    fs.existsSync(LSP_DATA_DIR) || fs.mkdirSync(LSP_DATA_DIR);
   }
 }
 
